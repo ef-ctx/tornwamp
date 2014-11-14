@@ -35,9 +35,7 @@ Or from the source-code:
 Example of usage
 ================
 
-An example of how to build a server using TornWAMP:
-
-`wamp.py`
+An example of how to build a server using TornWAMP (`wamp.py`):
 
 ::
 
