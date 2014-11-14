@@ -19,6 +19,15 @@ class MessageTestCase(unittest.TestCase):
         msg = wamp.HelloMessage.from_text("[1]")
         self.assertTrue(isinstance(msg, wamp.HelloMessage))
 
+    def test_error(self):
+        msg = wamp.Message(34)
+        msg.error("Some error", {"answer": 42})
+        expected_details = {
+            "message": "Some error",
+            "details": {"answer": 42}
+        }
+        self.assertEqual(msg.details, expected_details)
+
     def test_hello_message(self):
         hello_message = wamp.HelloMessage(realm="world", details={"roles": {}})
         self.assertEqual(hello_message.code, wamp.HELLO)
@@ -47,3 +56,38 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(abort_message.code, wamp.WELCOME)
         self.assertEqual(abort_message.details, wamp.DEFAULT_WELCOME_DETAILS)
         self.assertTrue(MIN_ID < abort_message.session_id < MAX_ID)
+        
+    def test_error_message_simple(self):
+        error_message = wamp.ErrorMessage(
+            request_code=2,
+            request_id=3126,
+            uri="some.very.buggy.error"
+        )
+        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.details, {})
+        expected = [8, 2, 3126, {}, "some.very.buggy.error"]
+        self.assertEqual(error_message.value, expected)
+
+    def test_error_message_kwargs_only(self):
+        error_message = wamp.ErrorMessage(
+            request_code=3,
+            request_id=7432,
+            uri="horrible.exception",
+            kwargs={'a': 1}
+        )
+        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.details, {})
+        expected = [8, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
+        self.assertEqual(error_message.value, expected)
+
+    def test_error_message_args_only(self):
+        error_message = wamp.ErrorMessage(
+            request_code=4,
+            request_id=8259,
+            uri="light.bug",
+            args=["banana"]
+        )
+        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.details, {})
+        expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
+        self.assertEqual(error_message.value, expected)

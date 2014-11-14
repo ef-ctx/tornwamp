@@ -6,7 +6,6 @@ https://github.com/tavendo/WAMP/blob/master/spec/basic.md
 """
 
 import json
-
 from tornwamp.identifier import create_global_id
 
 HELLO = 1
@@ -53,12 +52,15 @@ class Message(object):
         """
         return json.dumps(self.value)
 
-    def error(self, text):
+    def error(self, text, info=None):
         """
-        Add error description. This is mainly useful for WAMP messages which
-        have a details dictionary.
+        Add error description and aditional information.
+
+        This is useful for ABORT and ERROR messages.
         """
         self.details["message"] = text
+        if info:
+            self.details["details"] = info
 
     @classmethod
     def from_text(cls, text):
@@ -95,7 +97,7 @@ class AbortMessage(Message):
     def __init__(self, code=ABORT, details=None, reason=None):
         assert not reason is None, "AbortMessage must have a reason"
         self.code = code
-        self.details = details if details else {}
+        self.details = details or {}
         self.reason = reason
         self.value = [self.code, self.details, self.reason]
 
@@ -137,3 +139,45 @@ class WelcomeMessage(Message):
         self.session_id = session_id or create_global_id()
         self.details = details or DEFAULT_WELCOME_DETAILS
         self.value = [self.code, self.session_id, self.details]
+
+
+class ErrorMessage(Message):
+    """
+    Error reply sent by a Peer as an error response to different kinds of
+    requests.
+
+    [ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri]
+    [ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri,
+        Arguments|list]
+    [ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri,
+        Arguments|list, ArgumentsKw|dict]
+    """
+
+    def __init__(self, code=ERROR, request_code=None, request_id=None, details=None, uri=None, args=None, kwargs=None):
+        assert not request_code is None, "ErrorMessage: request_code is mandatory"
+        assert not request_id is None, "ErrorMessage: request_id is mandatory"
+        assert not uri is None, "ErrorMessage: uri is mandatory"
+        self.code = code
+        self.request_code = request_code
+        self.request_id = request_id
+        self.details = details or {}
+        self.uri = uri
+        self.args = args or []
+        self.kwargs = kwargs or {}
+
+    @property
+    def value(self):
+        data = [
+            self.code,
+            self.request_code,
+            self.request_id,
+            self.details,
+            self.uri
+        ]
+        if self.kwargs:
+            data.append(self.args)
+            data.append(self.kwargs)
+        else:
+            if self.args:
+                data.append(self.args)
+        return data
