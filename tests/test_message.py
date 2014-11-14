@@ -13,6 +13,12 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(message.value, raw)
         self.assertEqual(message.json, '[1, "somerealm", {}]')
 
+    def test_from_text(self):
+        msg = wamp.Message.from_text("[1]")
+        self.assertTrue(isinstance(msg, wamp.Message))
+        msg = wamp.HelloMessage.from_text("[1]")
+        self.assertTrue(isinstance(msg, wamp.HelloMessage))
+
     def test_hello_message(self):
         hello_message = wamp.HelloMessage(realm="world", details={"roles": {}})
         self.assertEqual(hello_message.code, wamp.HELLO)

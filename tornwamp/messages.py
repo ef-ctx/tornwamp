@@ -60,6 +60,14 @@ class Message(object):
         """
         self.details["message"] = text
 
+    @classmethod
+    def from_text(cls, text):
+        """
+        Decode text to JSON and return a Message object accordingly.
+        """
+        raw = json.loads(text)
+        return cls(*raw)
+
 
 class HelloMessage(Message):
     """
