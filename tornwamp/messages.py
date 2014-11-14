@@ -1,3 +1,7 @@
+"""
+WAMP messages definitions and serializers.
+"""
+
 import json
 
 # WAMP codes
@@ -38,4 +42,26 @@ class Message(object):
 
     @property
     def json(self):
+        """
+        Create a JSON representation of this message.
+        """
         return json.dumps(self.value)
+
+
+class HelloMessage(Message):
+    """
+    Sent by a Client to initiate opening of a WAMP session:
+    [HELLO, Realm|uri, Details|dict]
+    """
+
+    def __init__(self, code=HELLO, realm="", details=None):
+        self.code = code
+        self.realm = realm
+        self.details = details if details else {}
+
+    @property
+    def value(self):
+        """
+        Define the structure to be used to generate a JSON WAMP-compatible.
+        """
+        return [self.code, self.realm, self.details]
