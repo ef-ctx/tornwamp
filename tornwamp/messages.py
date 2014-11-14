@@ -7,6 +7,7 @@ https://github.com/tavendo/WAMP/blob/master/spec/basic.md
 
 import json
 
+from tornwamp.identifier import create_global_id
 
 HELLO = 1
 WELCOME = 2
@@ -89,3 +90,42 @@ class AbortMessage(Message):
         self.details = details if details else {}
         self.reason = reason
         self.value = [self.code, self.details, self.reason]
+
+
+DEFAULT_WELCOME_DETAILS = {
+    "authrole": "anonymous",
+    "authmethod": "anonymous",
+    "roles": {
+        "broker": {
+            "features": {
+                "publisher_identification": True,
+                "publisher_exclusion": True,
+                "subscriber_blackwhite_listing": True
+            }
+        },
+        "dealer": {
+            "features": {
+                "progressive_call_results": True,
+                "caller_identification": True
+            }
+        }
+    },
+    "authid": "jiQHbkkOxD1EFI7mJ1JITy3K"
+}
+
+
+class WelcomeMessage(Message):
+    """
+    Sent from the server side to open a WAMP session.
+    The WELCOME is a reply message to the Client's HELLO.
+
+    [WELCOME, Session|id, Details|dict]
+
+    https://github.com/tavendo/WAMP/blob/master/spec/basic.md#welcome
+    """
+
+    def __init__(self, code=WELCOME, session_id=None, details=None):
+        self.code = code
+        self.session_id = session_id or create_global_id()
+        self.details = details or DEFAULT_WELCOME_DETAILS
+        self.value = [self.code, self.session_id, self.details]

@@ -35,3 +35,9 @@ class MessageTestCase(unittest.TestCase):
         computed = str(error.exception)
         expected = "AbortMessage must have a reason"
         self.assertEqual(computed, expected)
+
+    def test_welcome_message(self):
+        abort_message = wamp.WelcomeMessage()
+        self.assertEqual(abort_message.code, wamp.WELCOME)
+        self.assertEqual(abort_message.details, wamp.DEFAULT_WELCOME_DETAILS)
+        self.assertTrue(MIN_ID < abort_message.session_id < MAX_ID)
