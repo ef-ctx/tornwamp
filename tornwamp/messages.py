@@ -46,6 +46,16 @@ class Message(object):
         self.value = [code] + list(args)
 
     @property
+    def id(self):
+        """
+        For all kinds of messages (except ERROR) that have [Request|id], it is
+        in the second position of the array.
+        """
+        if (len(self.value) > 1) and isinstance(self.value[1], int):
+            return self.value[1]
+        return -1
+
+    @property
     def json(self):
         """
         Create a JSON representation of this message.
@@ -154,9 +164,9 @@ class ErrorMessage(Message):
     """
 
     def __init__(self, code=ERROR, request_code=None, request_id=None, details=None, uri=None, args=None, kwargs=None):
-        assert not request_code is None, "ErrorMessage: request_code is mandatory"
-        assert not request_id is None, "ErrorMessage: request_id is mandatory"
-        assert not uri is None, "ErrorMessage: uri is mandatory"
+        assert not request_code is None, "ErrorMessage must have request_code"
+        assert not request_id is None, "ErrorMessage must have request_id"
+        assert not uri is None, "ErrorMessage must have uri"
         self.code = code
         self.request_code = request_code
         self.request_id = request_id

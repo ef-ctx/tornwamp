@@ -13,6 +13,11 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(message.value, raw)
         self.assertEqual(message.json, '[1, "somerealm", {}]')
 
+    def test_message_without_id(self):
+        raw = [201]
+        message = wamp.Message(*raw)
+        self.assertEqual(message.id, -1)
+
     def test_from_text(self):
         msg = wamp.Message.from_text("[1]")
         self.assertTrue(isinstance(msg, wamp.Message))
@@ -56,7 +61,7 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(abort_message.code, wamp.WELCOME)
         self.assertEqual(abort_message.details, wamp.DEFAULT_WELCOME_DETAILS)
         self.assertTrue(MIN_ID < abort_message.session_id < MAX_ID)
-        
+
     def test_error_message_simple(self):
         error_message = wamp.ErrorMessage(
             request_code=2,
@@ -67,6 +72,13 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(error_message.details, {})
         expected = [8, 2, 3126, {}, "some.very.buggy.error"]
         self.assertEqual(error_message.value, expected)
+
+    def test_error_message_missing_request_code(self):
+        with self.assertRaises(AssertionError) as error:
+            abort_message = wamp.ErrorMessage()
+        computed = str(error.exception)
+        expected = "ErrorMessage must have request_code"
+        self.assertEqual(computed, expected)
 
     def test_error_message_kwargs_only(self):
         error_message = wamp.ErrorMessage(
