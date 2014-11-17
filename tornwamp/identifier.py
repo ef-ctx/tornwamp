@@ -32,7 +32,7 @@ direction - Client-to-Router and Router-to-Client)
 import random
 
 MIN_ID = 0
-MAX_ID = 2**53
+MAX_ID = 2 ** 53
 
 existing_ids = []
 

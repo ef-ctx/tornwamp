@@ -9,11 +9,11 @@ setup:
 
 pep8:
 	@echo "Checking source-code PEP8 compliance"
-	@-pep8 tornwamp # --ignore=E501,E126,E127,E128
+	@-pep8 tornwamp --ignore=E501 #,E126,E127,E128
 
 pep8_tests:
 	@echo "Checking tests code PEP8 compliance"
-	@-pep8 tests # --ignore=E501,E126,E127,E128
+	@-pep8 tests --ignore=E501 #,E126,E127,E128
 
 lint:
 	@echo "Running pylint"

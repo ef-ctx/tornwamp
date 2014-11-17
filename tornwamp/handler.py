@@ -1,0 +1,73 @@
+"""
+Implement Tornado WAMP Handler.
+"""
+
+import tornado
+from tornado.websocket import WebSocketHandler
+
+from tornwamp import customize, session
+from tornwamp.messages import AbortMessage, Message
+from tornwamp.processors import UnhandledProcessor
+
+
+SUBPROTOCOL = 'wamp.2.json'
+
+
+class WAMPHandler(WebSocketHandler):
+    """
+    WAMP WebSocket Handler.
+    """
+
+    def __init__(self, *args, **kargs):
+        self.connection = None
+        super(WAMPHandler, self).__init__(*args, **kargs)
+
+    def select_subprotocol(self, subprotocols):
+        "Select WAMP 2 subprocotol"
+        return SUBPROTOCOL
+
+    def authorize(self):
+        """
+        Override for authorizing connection before the WebSocket is opened.
+        Sample usage: analyze the request cookies.
+
+        Return a tuple containing:
+        - boolean (if connection was accepted or not)
+        - dict (containing details of the authentication)
+        - string (explaining why the connection was not accepted)
+        """
+        return True, {}, ""
+
+    def register_connection(self):
+        """
+        Add connection to connection's manager.
+        """
+        session.connections[self.connection.id] = self.connection
+
+    def open(self):
+        """
+        Responsible for authorizing or aborting WebSocket connection.
+        It calls 'authorize' method and, based on its response, sends
+        a ABORT message to the client.
+        """
+        authorized, details, error_msg = self.authorize()
+        if authorized:
+            self.connection = session.ClientConnection(self, **details)
+            self.register_connection()
+        else:
+            abort_message = AbortMessage(reason='tornwamp.error.unauthorized')
+            abort_message.error(error_msg, details)
+            self.write_message(abort_message.json)
+            self.close(1, error_msg)
+
+    def on_message(self, txt):
+        """
+        Handle incoming messages on the WebSocket. Each message will be parsed
+        and handled by a Processor, which can be (re)defined by the user
+        changing the value of 'processors' dict, available at
+        tornwamp.customize module.
+        """
+        msg = Message.from_text(txt)
+        Processor = customize.processors.get(msg.code, UnhandledProcessor)
+        processor = Processor(msg, self.connection)
+        self.write_message(processor.answer_message.json)
