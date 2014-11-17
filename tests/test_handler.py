@@ -1,17 +1,11 @@
-import json
-
-from mock import patch
-from tornado import gen
 from tornado.concurrent import Future
-from tornado.httpclient import HTTPError, HTTPRequest
+from tornado.httpclient import HTTPRequest
 from tornado.testing import AsyncHTTPTestCase, gen_test
 from tornado.web import Application
 from tornado.websocket import websocket_connect
 
-from tornwamp.customize import processors
 from tornwamp.handler import WAMPHandler
 from tornwamp.messages import ABORT, AbortMessage, HelloMessage, Message, WELCOME
-from tornwamp.processors import Processor
 
 
 class UnauthorizeWAMPHandler(WAMPHandler):
@@ -52,8 +46,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         ws.close()
 
     @gen_test
-    @patch("tornwamp.handler.WAMPHandler.authorize", return_value=(False, {}, "Invalid user"))
-    def test_authorization_fails(self, mock_authorize):
+    def test_authorization_fails(self):
         request = self.build_request(path="no")
         ws = yield websocket_connect(request)
         text = yield ws.read_message()
