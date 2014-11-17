@@ -1,8 +1,6 @@
 """
 Implement Tornado WAMP Handler.
 """
-
-import tornado
 from tornado.websocket import WebSocketHandler
 
 from tornwamp import customize, session

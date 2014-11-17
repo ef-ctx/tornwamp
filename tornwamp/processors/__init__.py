@@ -1,3 +1,8 @@
+"""
+Processors are responsible for parsing received WAMP messages and providing
+feedback to the server on what should be done (e.g. send answer message order
+close connection).
+"""
 import abc
 from tornwamp.messages import Message, ErrorMessage, WelcomeMessage
 

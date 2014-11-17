@@ -177,6 +177,9 @@ class ErrorMessage(Message):
 
     @property
     def value(self):
+        """
+        Return value accordingly if args and/or kargs were provided.
+        """
         data = [
             self.code,
             self.request_code,

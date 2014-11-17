@@ -1,4 +1,5 @@
 """
+Abstract websocket connections (dual channel between clients and server).
 """
 from datetime import datetime
 
