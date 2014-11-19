@@ -32,7 +32,6 @@ lint:
 	@# W0231: __init__ method from base class %r is not called
 	@# W0511: (warning notes in code comments; message varies)
 
-
 	@echo "Running pylint"
 	@pylint tornwamp --disable=C0301 --disable=E1102 --disable=R0201 --disable=R0902 --disable=R0903 --disable=R0904 --disable=R0913 --disable=C0103 --disable=W0603 --disable=W0621 --disable=W0142 --disable=W0223 --disable=W0231 --disable=W0511
 

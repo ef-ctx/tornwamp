@@ -6,7 +6,20 @@ from datetime import datetime
 from tornwamp.identifier import create_global_id
 
 
-connections = {}
+class ConnectionDict(dict):
+    """
+    Connections manager.
+    """
+
+    @property
+    def dict(self):
+        """
+        Return a python dictionary which could be jsonified.
+        """
+        return {key: value.dict for key, value in self.items()}
+
+
+connections = ConnectionDict()
 
 
 class ClientConnection(object):
@@ -38,15 +51,15 @@ class ClientConnection(object):
 
         self.channels = []
 
-#    @property
-#    def dict(self):
-#        """
-#        Return dict representation of the current Connection, keeping only data
-#        that could be exported to JSON (convention: attributes which do not
-#        start with _).
-#        """
-#        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
-#
+    @property
+    def dict(self):
+        """
+        Return dict representation of the current Connection, keeping only data
+        that could be exported to JSON (convention: attributes which do not
+        start with _).
+        """
+        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
+
 #    def zombify(self):
 #        """
 #        Make current connection a zombie:

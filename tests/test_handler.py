@@ -6,6 +6,7 @@ from tornado.websocket import websocket_connect
 
 from tornwamp.handler import WAMPHandler
 from tornwamp.messages import ABORT, AbortMessage, HelloMessage, Message, WELCOME
+# tornwamp.handler         34      3      4      2    87%   49, 83-84
 
 
 class UnauthorizeWAMPHandler(WAMPHandler):
@@ -17,7 +18,6 @@ class UnauthorizeWAMPHandler(WAMPHandler):
 class WAMPHandlerTestCase(AsyncHTTPTestCase):
 
     def get_app(self):
-        self.close_future = Future()
         application = Application([
             (r"/ws", WAMPHandler),
             (r"/no", UnauthorizeWAMPHandler)
