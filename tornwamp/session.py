@@ -18,6 +18,17 @@ class ConnectionDict(dict):
         """
         return {key: value.dict for key, value in self.items()}
 
+    def filter_by_property_value(self, attr_name, attr_value):
+        """
+        Provided an attribute name and its value, retrieve connections which
+        have it.
+        """
+        items = []
+        for _, connection in self.items():
+            if getattr(connection, attr_name) == attr_value:
+                items.append(connection)
+        return items
+
 
 connections = ConnectionDict()
 
@@ -32,8 +43,7 @@ class ClientConnection(object):
         """
         Create a connection object provided:
         - websocket (tornado.websocket.WebSocketHandler instance
-        - details: dictionary of metadata associated to the connection. If it
-        has 'channels' key, that will be used to subscribe to specific channels
+        - details: dictionary of metadata associated to the connection
         """
         self.id = create_global_id()
 
@@ -48,8 +58,9 @@ class ClientConnection(object):
         # communication-related
         self._websocket = websocket
         self.zombie = False
+        self.zombification_datetime = None
 
-        self.channels = []
+        self.topics = []
 
     @property
     def dict(self):
@@ -60,19 +71,20 @@ class ClientConnection(object):
         """
         return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
-#    def zombify(self):
-#        """
-#        Make current connection a zombie:
-#        - remove it from all channels
-#
-#        In WAMP, in order to disconnect, we're supposed to do a GOODBYE
-#        handshake.
-#
-#        Considering the server wanted to disconnect the client for some reason,
-#        we leave the client in a "zombie" state, so it can't subscribe to
-#        channels and can't receive messages from other clients.
-#        """
-#        self.zombification_datetime = datetime.now().isoformat()
-#        self.channels = []
-#        self.zombie = True
-#        ChannelManager.remove_connection_from_all_channels(self)
+    def zombify(self):
+        """
+        Make current connection a zombie:
+        - remove all its topics
+        - remove it from the TopicsManager
+
+        In WAMP, in order to disconnect, we're supposed to do a GOODBYE
+        handshake.
+
+        Considering the server wanted to disconnect the client for some reason,
+        we leave the client in a "zombie" state, so it can't subscribe to
+        topics and can't receive messages from other clients.
+        """
+        self.zombification_datetime = datetime.now().isoformat()
+        self.topics = []
+        self.zombie = True
+#        TopicsManager.remove_connection_from_all_topics(self)

@@ -1,16 +1,16 @@
 """
 TornWAMP user-configurable structures.
 """
-from tornwamp.processors import HelloProcessor
+from tornwamp.processors import GoodbyeProcessor, HelloProcessor
 
 processors = {
-    1: HelloProcessor
+    1: HelloProcessor,
+    6: GoodbyeProcessor
 }
 #    2: 'welcome',
 #    3: 'abort',
 #    4: 'challenge',
 #    5: 'authenticate',
-#    6: 'goodbye',
 #    7: 'heartbeat',
 #    8: 'error',
 #    16: 'publish',

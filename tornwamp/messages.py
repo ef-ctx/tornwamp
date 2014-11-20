@@ -151,6 +151,19 @@ class WelcomeMessage(Message):
         self.value = [self.code, self.session_id, self.details]
 
 
+class GoodbyeMessage(Message):
+    """
+    Both the Server and the Client may abort the opening of a WAMP session
+    [ABORT, Details|dict, Reason|uri]
+    """
+
+    def __init__(self, code=GOODBYE, details=None, reason=None):
+        self.code = code
+        self.details = details or {}
+        self.reason = reason or ""
+        self.value = [self.code, self.details, self.reason]
+
+
 class ErrorMessage(Message):
     """
     Error reply sent by a Peer as an error response to different kinds of

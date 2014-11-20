@@ -1,7 +1,8 @@
 import unittest
 
-from tornwamp.messages import HelloMessage, ERROR, WELCOME
-from tornwamp.processors import Processor, HelloProcessor, UnhandledProcessor
+from tornwamp.messages import GoodbyeMessage, HelloMessage, ERROR, GOODBYE, WELCOME
+from tornwamp.processors import Processor, GoodbyeProcessor, HelloProcessor,\
+    UnhandledProcessor
 
 
 class MockConnection(object):
@@ -35,3 +36,14 @@ class ProcessorTestCase(unittest.TestCase):
         processor = HelloProcessor(message, connection)
         response = processor.answer_message
         self.assertEqual(response.code, WELCOME)
+
+    def test_goodbye_processor(self):
+        message = GoodbyeMessage(details={"message": "adios"}, reason="i.dont.like.you")
+        processor = GoodbyeProcessor(message, connection)
+        response = processor.answer_message
+        self.assertEqual(response.code, GOODBYE)
+        self.assertEqual(response.details, {"message": "adios"})
+        self.assertEqual(response.reason, "i.dont.like.you")
+        self.assertTrue(processor.must_close)
+        self.assertEqual(processor.close_code, 2)
+        self.assertEqual(processor.close_reason, "adios")
