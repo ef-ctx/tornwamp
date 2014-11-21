@@ -4,7 +4,7 @@ feedback to the server on what should be done (e.g. send answer message order
 close connection).
 """
 import abc
-from tornwamp.messages import Message, ErrorMessage, WelcomeMessage
+from tornwamp.messages import Message, GoodbyeMessage, ErrorMessage, WelcomeMessage
 
 
 class Processor(object):
@@ -34,7 +34,7 @@ class Processor(object):
         # the attributes below are in case we are expected to close the socket
         self.must_close = False
         self.close_code = None
-        self.close_message = None
+        self.close_reason = None
 
         self.process()
 
@@ -80,3 +80,14 @@ class HelloProcessor(Processor):
         """
         welcome_message = WelcomeMessage()
         self.answer_message = welcome_message
+
+
+class GoodbyeProcessor(Processor):
+    """
+    Responsible for dealing GOODBYE messages.
+    """
+    def process(self):
+        self.answer_message = GoodbyeMessage(*self.message.value)
+        self.must_close = True
+        self.close_code = 2
+        self.close_reason = self.answer_message.details.get('message', '')

@@ -42,6 +42,12 @@ class WAMPHandler(WebSocketHandler):
         """
         session.connections[self.connection.id] = self.connection
 
+    def deregister_connection(self):
+        """
+        Remove connection from connection's manager.
+        """
+        return session.connections.pop(self.connection.id) if self.connection else None
+
     def open(self):
         """
         Responsible for authorizing or aborting WebSocket connection.
@@ -69,3 +75,12 @@ class WAMPHandler(WebSocketHandler):
         Processor = customize.processors.get(msg.code, UnhandledProcessor)
         processor = Processor(msg, self.connection)
         self.write_message(processor.answer_message.json)
+        if processor.must_close:
+            self.close(processor.close_code, processor.close_reason)
+
+    def close(self, code=None, reason=None):
+        """
+        Invoked when a WebSocket is closed.
+        """
+        self.deregister_connection()
+        super(WAMPHandler, self).close(code, reason)
