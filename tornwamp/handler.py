@@ -12,6 +12,9 @@ SUBPROTOCOL = 'wamp.2.json'
 
 
 def abort(handler, error_msg, details, reason='tornwamp.error.unauthorized'):
+    """
+    Used to abort a connection while the user is trying to establish it.
+    """
     abort_message = AbortMessage(reason=reason)
     abort_message.error(error_msg, details)
     handler.write_message(abort_message.json)

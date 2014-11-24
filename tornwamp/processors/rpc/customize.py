@@ -1,3 +1,8 @@
+"""
+This module allows customization of which methos are supported when using
+RPC.
+"""
+
 from tornwamp.messages import ResultMessage
 
 ping = lambda call_message: ResultMessage(

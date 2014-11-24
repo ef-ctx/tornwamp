@@ -1,3 +1,10 @@
+"""
+RPC processors.
+
+Compatible with WAMP Document Revision: RC3, 2014/08/25, available at:
+https://github.com/tavendo/WAMP/blob/master/spec/basic.md
+"""
+
 from tornwamp.messages import CallMessage, ResultMessage, ErrorMessage
 from tornwamp.processors import Processor
 from tornwamp.processors.rpc import customize
@@ -18,7 +25,6 @@ class CallProcessor(Processor):
 
         Which will be the processor's answer message.'
         """
-        error_code = 0
         msg = CallMessage(*self.message)
         method_name = msg.procedure
         if (method_name in customize.procedures):
