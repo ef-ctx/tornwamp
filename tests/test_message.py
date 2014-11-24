@@ -103,3 +103,12 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(error_message.details, {})
         expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
+
+    def test_result_message(self):
+        result_message = wamp.ResultMessage(request_id=8259)
+        self.assertEqual(result_message.code, wamp.RESULT)
+        self.assertEqual(result_message.details, {})
+        self.assertEqual(result_message.args, [])
+        self.assertEqual(result_message.kwargs, {})
+        expected = [50, 8259, {}]
+        self.assertEqual(result_message.value, expected)

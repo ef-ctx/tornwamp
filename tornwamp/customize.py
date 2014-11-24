@@ -1,11 +1,13 @@
 """
 TornWAMP user-configurable structures.
 """
-from tornwamp.processors import GoodbyeProcessor, HelloProcessor
+from tornwamp.processors import GoodbyeProcessor, HelloProcessor, rpc
+
 
 processors = {
     1: HelloProcessor,
-    6: GoodbyeProcessor
+    6: GoodbyeProcessor,
+    48: rpc.CallProcessor
 }
 #    2: 'welcome',
 #    3: 'abort',
@@ -20,7 +22,6 @@ processors = {
 #    34: 'unsubscribe',
 #    35: 'unsubscribed',
 #    36: 'event',
-#    48: 'call',
 #    49: 'cancel',
 #    50: 'result',
 #    64: 'register',

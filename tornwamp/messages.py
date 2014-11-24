@@ -41,9 +41,11 @@ class Message(object):
     """
     details = {}
 
-    def __init__(self, code, *args):
+    def __init__(self, code, *data, **kdata):
         self.code = code
-        self.value = [code] + list(args)
+        self.value = [code] + list(data)
+        self.args = kdata.get("args", [])
+        self.kwargs = kdata.get("kwargs", {})
 
     @property
     def id(self):
@@ -79,6 +81,18 @@ class Message(object):
         """
         raw = json.loads(text)
         return cls(*raw)
+
+    def _update_args_and_kargs(self):
+        """
+        Append args and kwargs to message value, according to their existance
+        or not.
+        """
+        if self.kwargs:
+            self.value.append(self.args)
+            self.value.append(self.kwargs)
+        else:
+            if self.args:
+                self.value.append(self.args)
 
 
 class HelloMessage(Message):
@@ -164,6 +178,57 @@ class GoodbyeMessage(Message):
         self.value = [self.code, self.details, self.reason]
 
 
+class ResultMessage(Message):
+    """
+    Result of a call as returned by Dealer to Caller.
+
+    [RESULT, CALL.Request|id, Details|dict]
+    [RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list]
+    [RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list, YIELD.ArgumentsKw|dict]
+    """
+
+    def __init__(self, code=RESULT, request_id=None, details=None, args=None, kwargs=None):
+        assert not request_id is None, "ResultMessage must have request_id"
+        self.code = code
+        self.request_id = request_id
+        self.details = details or {}
+        self.args = args or []
+        self.kwargs = kwargs or {}
+        self.value = [
+            self.code,
+            self.request_id,
+            self.details
+        ]
+        self._update_args_and_kargs()
+
+
+class CallMessage(Message):
+    """
+    Call as originally issued by the Caller to the Dealer.
+
+    [CALL, Request|id, Options|dict, Procedure|uri]
+    [CALL, Request|id, Options|dict, Procedure|uri, Arguments|list]
+    [CALL, Request|id, Options|dict, Procedure|uri, Arguments|list, ArgumentsKw|dict]
+    """
+
+    def __init__(self, code=CALL, request_id=None, options=None, procedure=None, args=None, kwargs=None):
+        assert not request_id is None, "CallMessage must have request_id"
+        assert not procedure is None, "CallMessage must have procedure"
+        self.code = code
+        self.request_id = request_id
+        self.options = options or {}
+        self.procedure = procedure
+        self.args = args or []
+        self.kwargs = kwargs or {}
+        self.value = [
+            self.code,
+            self.request_id,
+            self.options,
+            self.procedure,
+        ]
+        self._update_args_and_kargs()
+
+
 class ErrorMessage(Message):
     """
     Error reply sent by a Peer as an error response to different kinds of
@@ -187,23 +252,11 @@ class ErrorMessage(Message):
         self.uri = uri
         self.args = args or []
         self.kwargs = kwargs or {}
-
-    @property
-    def value(self):
-        """
-        Return value accordingly if args and/or kargs were provided.
-        """
-        data = [
+        self.value = [
             self.code,
             self.request_code,
             self.request_id,
             self.details,
             self.uri
         ]
-        if self.kwargs:
-            data.append(self.args)
-            data.append(self.kwargs)
-        else:
-            if self.args:
-                data.append(self.args)
-        return data
+        self._update_args_and_kargs()
