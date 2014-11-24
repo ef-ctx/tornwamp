@@ -25,7 +25,7 @@ class CallProcessor(Processor):
 
         Which will be the processor's answer message.'
         """
-        msg = CallMessage(*self.message)
+        msg = CallMessage(*self.message.value)
         method_name = msg.procedure
         if (method_name in customize.procedures):
             method = customize.procedures[method_name]
