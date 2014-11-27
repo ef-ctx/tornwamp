@@ -79,7 +79,7 @@ class HelloProcessor(Processor):
         """
         Return WELCOME message based on the input HELLO message.
         """
-        hello_message = HelloMessage(*self.message.value)
+        # hello_message = HelloMessage(*self.message.value)
         # TODO: assert realm is in allowed list
         welcome_message = WelcomeMessage()
         self.answer_message = welcome_message
