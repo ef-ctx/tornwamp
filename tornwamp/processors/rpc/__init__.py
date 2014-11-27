@@ -29,7 +29,7 @@ class CallProcessor(Processor):
         method_name = msg.procedure
         if (method_name in customize.procedures):
             method = customize.procedures[method_name]
-            answer = method(*msg.args, call_message=msg, **msg.kwargs)
+            answer = method(*msg.args, call_message=msg, connection=self.connection, **msg.kwargs)
         else:
             error_uri = "wamp.rpc.unsupported.procedure"
             error_msg = "The procedure {} doesn't exist".format(method_name)

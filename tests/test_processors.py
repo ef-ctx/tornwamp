@@ -1,6 +1,6 @@
 import unittest
 
-from tornwamp.messages import GoodbyeMessage, HelloMessage, ERROR, GOODBYE, WELCOME
+from tornwamp.messages import GoodbyeMessage, HelloMessage, ERROR, GOODBYE, Message, WELCOME
 from tornwamp.processors import Processor, GoodbyeProcessor, HelloProcessor,\
     UnhandledProcessor
 
@@ -22,7 +22,7 @@ class ProcessorTestCase(unittest.TestCase):
         self.assertEqual(msg, expected_msg)
 
     def test_unhandled_processor(self):
-        message = [456, 34, 'wamp.undefined.message']
+        message = Message(*[456, 34, 'wamp.undefined.message'])
         processor = UnhandledProcessor(message, connection)
         details = "Unsupported message [456, 34, 'wamp.undefined.message']"
         response = processor.answer_message
