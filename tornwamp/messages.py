@@ -260,3 +260,35 @@ class ErrorMessage(Message):
             self.uri
         ]
         self._update_args_and_kargs()
+
+
+class SubscribeMessage(object):
+    """
+    A Subscriber communicates its interest in a topic to the Server by sending
+    a SUBSCRIBE message:
+    [SUBSCRIBE, Request|id, Options|dict, Topic|uri]
+    """
+
+    def __init__(self, code=SUBSCRIBE, request_id=None, options=None, topic=None):
+        assert not request_id is None, "SubscribeMessage must have request_id"
+        assert not topic is None, "SubscribeMessage must have topic"
+        self.code = code
+        self.request_id = request_id
+        self.options = options or {}
+        self.topic = topic
+        self.value = [self.code, self.request_id, self.options, self.topic]
+
+
+class SubscribedMessage(object):
+    """
+    If the Broker is able to fulfill and allow the subscription, it answers by
+    sending a SUBSCRIBED message to the Subscriber:
+    [SUBSCRIBED, SUBSCRIBE.Request|id, Subscription|id]
+    """
+    def __init__(self, code=SUBSCRIBED, request_id=None, subscription_id=None):
+        assert not request_id is None, "SubscribedMessage must have request_id"
+        assert not subscription_id is None, "SubscribedMessage must have subscription_id"
+        self.code = code
+        self.request_id = request_id
+        self.subscription_id = subscription_id
+        self.value = [self.code, self.request_id, self.subscription_id]
