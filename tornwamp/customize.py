@@ -1,12 +1,13 @@
 """
 TornWAMP user-configurable structures.
 """
-from tornwamp.processors import GoodbyeProcessor, HelloProcessor, rpc
+from tornwamp.processors import GoodbyeProcessor, HelloProcessor, pubsub, rpc
 
 
 processors = {
     1: HelloProcessor,
     6: GoodbyeProcessor,
+    32: pubsub.SubscribeProcessor,
     48: rpc.CallProcessor
 }
 #    2: 'welcome',

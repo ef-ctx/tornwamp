@@ -262,7 +262,7 @@ class ErrorMessage(Message):
         self._update_args_and_kargs()
 
 
-class SubscribeMessage(object):
+class SubscribeMessage(Message):
     """
     A Subscriber communicates its interest in a topic to the Server by sending
     a SUBSCRIBE message:
@@ -279,7 +279,7 @@ class SubscribeMessage(object):
         self.value = [self.code, self.request_id, self.options, self.topic]
 
 
-class SubscribedMessage(object):
+class SubscribedMessage(Message):
     """
     If the Broker is able to fulfill and allow the subscription, it answers by
     sending a SUBSCRIBED message to the Subscriber:

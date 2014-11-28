@@ -57,10 +57,27 @@ class ClientConnection(object):
 
         # communication-related
         self._websocket = websocket
+        self.topics = {}
+
+        # when connection should be closed but something is left
         self.zombie = False
         self.zombification_datetime = None
 
-        self.topics = []
+    def add_subscribed_channel(self, subscription_id, topic_name):
+        """
+        Add topic as a subscriber.
+        """
+        topics = self.topics.get("subscriber", {})
+        topics[subscription_id] = topic_name  # doing in this order to debug
+        self.topics["subscriber"] = topics
+
+    def add_publisher_channel(self, subscription_id, topic):
+        """
+        Add topic as a publisher.
+        """
+        topics = self.topics.get("publisher", {})
+        topics[subscription_id] = topic_name  # doing in this order to debug
+        self.topics["subscriber"] = topics
 
     @property
     def dict(self):
