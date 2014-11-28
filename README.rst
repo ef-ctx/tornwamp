@@ -1,5 +1,5 @@
 TornWAMP
-============
+========
 
 This Python module implements parts of `WAMP <http://wamp.ws/>`_
 (Web Application Messaging Protocol).
@@ -17,7 +17,7 @@ it can also be used in other ways.
 How to install
 ==============
 
-Using `pip <https://pip.pypa.io/>`_:
+Using `pip <https://pip.pypa.io/>`_ (to be available soon):
 
 ::
 
@@ -27,7 +27,7 @@ Or from the source-code:
 
 ::
 
-    git clone https://github.com/tatiana/tornwamp.git
+    git clone https://github.com/ef-ctx/tornwamp.git
     cd tornwamp
     python setup.py install
 
@@ -74,9 +74,9 @@ to connect to the server using:
 License
 =======
 
-Tornado WAMP is GNU GPL 2:
+TornWAMP is GNU GPL 2:
 
-< Tornado WAMP >
+< TornWAMP >
 Copyright (C) 2014 - Education First (CTX Team)
 
 Tornado WAMP is free software: you can redistribute it and/or modify
