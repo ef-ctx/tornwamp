@@ -63,7 +63,7 @@ class ClientConnection(object):
         self.zombie = False
         self.zombification_datetime = None
 
-    def add_subscribed_channel(self, subscription_id, topic_name):
+    def add_subscription_channel(self, subscription_id, topic_name):
         """
         Add topic as a subscriber.
         """
@@ -71,13 +71,13 @@ class ClientConnection(object):
         topics[subscription_id] = topic_name  # doing in this order to debug
         self.topics["subscriber"] = topics
 
-    def add_publisher_channel(self, subscription_id, topic):
+    def add_publishing_channel(self, subscription_id, topic_name):
         """
         Add topic as a publisher.
         """
         topics = self.topics.get("publisher", {})
         topics[subscription_id] = topic_name  # doing in this order to debug
-        self.topics["subscriber"] = topics
+        self.topics["publisher"] = topics
 
     @property
     def dict(self):

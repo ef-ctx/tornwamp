@@ -25,7 +25,7 @@ class SubscribeProcessor(Processor):
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
-                request_type=received_message.code,
+                request_code=received_message.code,
                 uri="tornwamp.subscribe.unauthorized"
             )
             answer.error(msg)

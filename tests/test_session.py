@@ -35,6 +35,26 @@ class ClientConnectionTestCase(unittest.TestCase):
         self.assertEqual(connection.topics, [])
         self.assertTrue(connection.zombie)
 
+    def test_add_subscription_channel(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_subscription_channel(7, "start.wars")
+        expected_topics = {
+            "subscriber": {
+                7: "start.wars"
+            }
+        }
+        self.assertEqual(connection.topics, expected_topics)
+
+    def test_add_publishing_channel(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_publishing_channel(42, "reason.for.life")
+        expected_topics = {
+            "publisher": {
+                42: "reason.for.life"
+            }
+        }
+        self.assertEqual(connection.topics, expected_topics)
+
 
 class ConnectionDicttestCase(unittest.TestCase):
 
