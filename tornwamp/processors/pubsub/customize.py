@@ -8,7 +8,7 @@ from tornwamp.messages import EventMessage
 from tornwamp.topic import topics
 
 
-def authorize_publication(subscribe_message, connection):
+def authorize_publication(topic_name, connection):
     """
     Says if a user can publish to a topic or not.
     Return: True or False and the error message ("" if no error occured).
@@ -16,7 +16,7 @@ def authorize_publication(subscribe_message, connection):
     return True, ""
 
 
-def authorize_subscription(subscribe_message, connection):
+def authorize_subscription(topic_name, connection):
     """
     Says if a user can subscribe to a topic or not.
     Return: True or False and the error message ("" if no error occured).

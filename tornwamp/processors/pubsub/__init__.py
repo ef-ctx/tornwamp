@@ -16,7 +16,7 @@ class SubscribeProcessor(Processor):
         Return SUBSCRIBE message based on the input HELLO message.
         """
         received_message = SubscribeMessage(*self.message.value)
-        allow, msg = customize.authorize_subscription(received_message, self.connection)
+        allow, msg = customize.authorize_subscription(received_message.topic, self.connection)
         if allow:
             new_id = customize.add_subscriber(received_message.topic, self.connection)
             answer = SubscribedMessage(
@@ -42,7 +42,7 @@ class PublishProcessor(Processor):
         Return SUBSCRIBE message based on the input HELLO message.
         """
         received_message = PublishMessage(*self.message.value)
-        allow, msg = customize.authorize_publication(received_message, self.connection)
+        allow, msg = customize.authorize_publication(received_message.topic, self.connection)
         if allow:
             publication_id = create_global_id()
             answer = PublishedMessage(
