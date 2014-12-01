@@ -29,8 +29,7 @@ class Processor(object):
 
         # messages to be sent by the WebSocket
         self.answer_message = None  # response message
-        self.broadcast_message = None  # to be sent to * clients connected
-        self.group_messages = {}  # to be sent to specific groups of clients
+        self.groups_messages = {}  # to be sent to specific groups of clients
 
         # the attributes below are in case we are expected to close the socket
         self.must_close = False

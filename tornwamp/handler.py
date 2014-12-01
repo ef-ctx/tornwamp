@@ -81,8 +81,14 @@ class WAMPHandler(WebSocketHandler):
         msg = Message.from_text(txt)
         Processor = customize.processors.get(msg.code, UnhandledProcessor)
         processor = Processor(msg, self.connection)
+
         if self.connection and not self.connection.zombie:  # TODO: cover branch else
             self.write_message(processor.answer_message.json)
+
+        for item in processor.groups_messages:
+            recipient = item["connection"]
+            recipient.write_message(item["message"])
+
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)
 

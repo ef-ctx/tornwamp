@@ -16,7 +16,7 @@ class SubscribeProcessorTestCase(unittest.TestCase):
         self.assertEqual(answer.code, SUBSCRIBED)
         self.assertEqual(answer.request_id, 123)
 
-    @patch("tornwamp.processors.pubsub.customize.authorize", return_value=(False, "Your problem"))
+    @patch("tornwamp.processors.pubsub.customize.authorize_subscription", return_value=(False, "Your problem"))
     def test_fail(self, mock_authorize):
         message = SubscribeMessage(request_id=123, topic="olympic.games")
         connection = ClientConnection(None)
