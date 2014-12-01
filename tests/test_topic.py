@@ -41,7 +41,7 @@ class TopicsManagerTestCase(unittest.TestCase):
         manager.add_subscriber("romania", connection)
         connection = manager["romania"].subscribers.pop()
         self.assertEqual(connection.name, "Dracula")
-        self.assertTrue("romania" in connection.topics["subscriber"].values())
+        self.assertTrue("romania" in connection.topics["subscriber"])
 
     def test_add_publisher(self):
         manager = TopicsManager()
@@ -49,7 +49,7 @@ class TopicsManagerTestCase(unittest.TestCase):
         manager.add_publisher("gernsheim", connection)
         connection = manager["gernsheim"].publishers.pop()
         self.assertEqual(connection.name, "Frankenstein")
-        self.assertTrue("gernsheim" in connection.topics["publisher"].values())
+        self.assertTrue("gernsheim" in connection.topics["publisher"])
 
     @patch("tornwamp.session.create_global_id", side_effect=[1, 2])
     @patch("tornwamp.topic.create_global_id", side_effect=[3, 4])
@@ -71,7 +71,7 @@ class TopicsManagerTestCase(unittest.TestCase):
                         'name': 'Dr Jekyll',
                         'topics': {
                             'publisher': {
-                                4: 'scotland'
+                                'scotland': 4
                             }
                         },
                         'zombie': False,
@@ -85,7 +85,7 @@ class TopicsManagerTestCase(unittest.TestCase):
                         'name': 'Mr Hyde',
                         'topics': {
                             'subscriber': {
-                                3: 'scotland'
+                                'scotland': 3
                             }
                         },
                         'zombie': False,

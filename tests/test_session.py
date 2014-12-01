@@ -40,7 +40,7 @@ class ClientConnectionTestCase(unittest.TestCase):
         connection.add_subscription_channel(7, "start.wars")
         expected_topics = {
             "subscriber": {
-                7: "start.wars"
+                "start.wars": 7
             }
         }
         self.assertEqual(connection.topics, expected_topics)
@@ -50,7 +50,7 @@ class ClientConnectionTestCase(unittest.TestCase):
         connection.add_publishing_channel(42, "reason.for.life")
         expected_topics = {
             "publisher": {
-                42: "reason.for.life"
+                "reason.for.life": 42
             }
         }
         self.assertEqual(connection.topics, expected_topics)

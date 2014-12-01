@@ -68,7 +68,7 @@ class ClientConnection(object):
         Add topic as a subscriber.
         """
         topics = self.topics.get("subscriber", {})
-        topics[subscription_id] = topic_name  # doing in this order to debug
+        topics[topic_name] = subscription_id
         self.topics["subscriber"] = topics
 
     def add_publishing_channel(self, subscription_id, topic_name):
@@ -76,7 +76,7 @@ class ClientConnection(object):
         Add topic as a publisher.
         """
         topics = self.topics.get("publisher", {})
-        topics[subscription_id] = topic_name  # doing in this order to debug
+        topics[topic_name] = subscription_id  # doing in this order to debug
         self.topics["publisher"] = topics
 
     @property
