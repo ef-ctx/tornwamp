@@ -87,7 +87,7 @@ class WAMPHandler(WebSocketHandler):
 
         for item in processor.direct_messages:
             recipient = item["connection"]
-            recipient.write_message(item["message"])
+            recipient.write_message(item["message"].json)
 
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)
