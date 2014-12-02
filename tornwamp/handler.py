@@ -85,7 +85,7 @@ class WAMPHandler(WebSocketHandler):
         if self.connection and not self.connection.zombie:  # TODO: cover branch else
             self.write_message(processor.answer_message.json)
 
-        for item in processor.groups_messages:
+        for item in processor.direct_messages:
             recipient = item["connection"]
             recipient.write_message(item["message"])
 

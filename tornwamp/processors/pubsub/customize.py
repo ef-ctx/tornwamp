@@ -33,7 +33,7 @@ def add_subscriber(topic, connection):
     return subscription_id
 
 
-def get_groups_messages(publish_message, publication_id):
+def get_direct_messages(publish_message, publication_id):
     """
     Return a list of dictionaries containing lists of connections and what
     message they should receive.
