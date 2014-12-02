@@ -26,10 +26,11 @@ class CallProcessor(Processor):
         Which will be the processor's answer message.'
         """
         msg = CallMessage(*self.message.value)
+        direct_messages = {}
         method_name = msg.procedure
         if (method_name in customize.procedures):
             method = customize.procedures[method_name]
-            answer = method(*msg.args, call_message=msg, connection=self.connection, **msg.kwargs)
+            answer, direct_messages = method(*msg.args, call_message=msg, connection=self.connection, **msg.kwargs)
         else:
             error_uri = "wamp.rpc.unsupported.procedure"
             error_msg = "The procedure {} doesn't exist".format(method_name)
@@ -42,3 +43,4 @@ class CallProcessor(Processor):
             response_msg.error(error_msg)
             answer = response_msg
         self.answer_message = answer
+        self.direct_messages = direct_messages
