@@ -8,14 +8,14 @@ from tornwamp.messages import ResultMessage
 
 def ping(call_message, connection):
     """
-    Return a answer (ResultMessage) and empty dictionary direct_messages.
+    Return a answer (ResultMessage) and empty list direct_messages.
     """
     answer = ResultMessage(
         request_id=call_message.request_id,
         details=call_message.details,
         args=["Ping response"]
     )
-    return answer, {}
+    return answer, []
 
 procedures = {
     "ping": ping
