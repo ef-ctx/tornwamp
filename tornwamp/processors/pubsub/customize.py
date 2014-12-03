@@ -13,6 +13,8 @@ def authorize_publication(topic_name, connection):
     Says if a user can publish to a topic or not.
     Return: True or False and the error message ("" if no error occured).
     """
+    assert topic_name, "authorize_publication requires topic_name"
+    assert connection, "authorize_publication requires connection"
     return True, ""
 
 
@@ -21,6 +23,8 @@ def authorize_subscription(topic_name, connection):
     Says if a user can subscribe to a topic or not.
     Return: True or False and the error message ("" if no error occured).
     """
+    assert topic_name, "authorize_subscription requires topic_name"
+    assert connection, "authorize_subscription requires connection"
     return True, ""
 
 

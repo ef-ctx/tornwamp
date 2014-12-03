@@ -10,6 +10,8 @@ def ping(call_message, connection):
     """
     Return a answer (ResultMessage) and empty list direct_messages.
     """
+    assert connection, "ping requires connection"
+
     answer = ResultMessage(
         request_id=call_message.request_id,
         details=call_message.details,
