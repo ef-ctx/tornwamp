@@ -38,7 +38,8 @@ def get_direct_messages(publish_message, publication_id):
     Return a list of dictionaries containing lists of connections and what
     message they should receive.
     """
-    subscribers = topics.get[topic_name].subscribers
+    topic_name = publish_message.topic
+    subscribers = topics.get(topic_name, [])
     data = []
     for connection in subscribers:
         subscription_id = connection.topics["subscriber"][topic_name]

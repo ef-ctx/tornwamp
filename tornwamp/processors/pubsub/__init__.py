@@ -2,7 +2,7 @@
 WAMP-PubSub processors.
 """
 from tornwamp.identifier import create_global_id
-from tornwamp.messages import ErrorMessage, EventMessage, SubscribeMessage, SubscribedMessage
+from tornwamp.messages import ErrorMessage, EventMessage, PublishMessage, PublishedMessage, SubscribeMessage, SubscribedMessage
 from tornwamp.processors import Processor
 from tornwamp.processors.pubsub import customize
 
