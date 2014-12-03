@@ -67,9 +67,7 @@ class ClientConnection(object):
         """
         Add topic as a subscriber.
         """
-        topics = self.topics.get("subscriber", {})
-        topics[topic_name] = subscription_id
-        self.topics["subscriber"] = topics
+        self.topics.setdefault("subscriber", {topic_name: subscription_id})
 
     def remove_subscription_channel(self, topic_name):
         """
