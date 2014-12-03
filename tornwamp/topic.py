@@ -10,14 +10,14 @@ class TopicsManager(dict):
     publish and/or subscribe to.
     """
 
-    def add_subscriber(self, topic_name, connection):
+    def add_subscriber(self, topic_name, connection, subscription_id=None):
         """
         Add a connection as a topic's subscriber.
         """
         topic = self.get(topic_name, Topic(topic_name))
         topic.subscribers.add(connection)
         self[topic_name] = topic
-        subscription_id = create_global_id()
+        subscription_id = subscription_id or create_global_id()
         connection.add_subscription_channel(subscription_id, topic_name)
         return subscription_id
 
