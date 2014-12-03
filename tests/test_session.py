@@ -45,6 +45,14 @@ class ClientConnectionTestCase(unittest.TestCase):
         }
         self.assertEqual(connection.topics, expected_topics)
 
+    def test_get_publisher_topics(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_subscription_channel(12, "again.do.nothing")
+        connection.add_subscription_channel(32, "start.wars")
+        expected_topics = ["again.do.nothing", "start.wars"]
+        topics = connection.get_subscriber_topics()
+        self.assertEqual(sorted(topics), expected_topics)
+
     def test_add_publishing_channel(self):
         connection = ClientConnection(websocket=None)
         connection.add_publishing_channel(42, "reason.for.life")
@@ -55,6 +63,13 @@ class ClientConnectionTestCase(unittest.TestCase):
         }
         self.assertEqual(connection.topics, expected_topics)
 
+    def test_get_publisher_topics(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_publishing_channel(11, "dont.try.anything")
+        connection.add_publishing_channel(42, "reason.for.life")
+        expected_topics = ["dont.try.anything", "reason.for.life"]
+        topics = connection.get_publisher_topics()
+        self.assertEqual(sorted(topics), expected_topics)
 
 class ConnectionDicttestCase(unittest.TestCase):
 

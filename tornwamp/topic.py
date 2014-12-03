@@ -21,6 +21,17 @@ class TopicsManager(dict):
         connection.add_subscription_channel(subscription_id, topic_name)
         return subscription_id
 
+    def remove_subscriber(self, topic_name, connection):
+        """
+        Remove a connection a topic's subscriber
+        """
+        topic = self.get(topic_name)
+        if topic is None:
+            return
+        if connection in topic.subscribers:
+            topic.subscribers.discard(connection)
+            connection.remove_subscription_channel(topic_name)
+
     def add_publisher(self, topic_name, connection):
         """
         Add a connection as a topic's publisher.
@@ -31,6 +42,31 @@ class TopicsManager(dict):
         subscription_id = create_global_id()
         connection.add_publishing_channel(subscription_id, topic_name)
         return subscription_id
+
+    def remove_publisher(self, topic_name, connection):
+        """
+        Remove a connection a topic's subscriber
+        """
+        topic = self.get(topic_name)
+        if topic is None:
+            return
+        if connection in topic.publishers:
+            topic.publishers.discard(connection)
+            connection.remove_publishing_channel(topic_name)
+
+    def remove_connection(self, connection):
+        """
+        Connection is to be removed, scrap all connection publishers/subscribers in every topic
+        """
+        for topic_name in connection.get_publisher_topics():
+            topic = self.get(topic_name)
+            if topic:
+                topic.publishers.discard(connection)
+
+        for topic_name in connection.get_subscriber_topics():
+            topic = self.get(topic_name)
+            if topic:
+                topic.subscribers.discard(connection)
 
     @property
     def dict(self):
