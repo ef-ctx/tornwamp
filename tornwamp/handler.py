@@ -11,6 +11,16 @@ from tornwamp.processors import UnhandledProcessor
 SUBPROTOCOL = 'wamp.2.json'
 
 
+def abort(handler, error_msg, details, reason='tornwamp.error.unauthorized'):
+    """
+    Used to abort a connection while the user is trying to establish it.
+    """
+    abort_message = AbortMessage(reason=reason)
+    abort_message.error(error_msg, details)
+    handler.write_message(abort_message.json)
+    handler.close(1, error_msg)
+
+
 class WAMPHandler(WebSocketHandler):
     """
     WAMP WebSocket Handler.
@@ -59,10 +69,7 @@ class WAMPHandler(WebSocketHandler):
             self.connection = session.ClientConnection(self, **details)
             self.register_connection()
         else:
-            abort_message = AbortMessage(reason='tornwamp.error.unauthorized')
-            abort_message.error(error_msg, details)
-            self.write_message(abort_message.json)
-            self.close(1, error_msg)
+            abort(self, error_msg, details)
 
     def on_message(self, txt):
         """
@@ -74,7 +81,14 @@ class WAMPHandler(WebSocketHandler):
         msg = Message.from_text(txt)
         Processor = customize.processors.get(msg.code, UnhandledProcessor)
         processor = Processor(msg, self.connection)
-        self.write_message(processor.answer_message.json)
+
+        if self.connection and not self.connection.zombie:  # TODO: cover branch else
+            self.write_message(processor.answer_message.json)
+
+        for item in processor.direct_messages:
+            recipient = item["connection"]
+            recipient.write_message(item["message"].json)
+
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)
 

@@ -4,7 +4,7 @@ feedback to the server on what should be done (e.g. send answer message order
 close connection).
 """
 import abc
-from tornwamp.messages import Message, GoodbyeMessage, ErrorMessage, WelcomeMessage
+from tornwamp.messages import Message, ErrorMessage, GoodbyeMessage, HelloMessage, WelcomeMessage
 
 
 class Processor(object):
@@ -22,14 +22,16 @@ class Processor(object):
         session_id: string or number
         """
         self.session_id = getattr(connection, "id", None)
+        self.connection = connection
 
         # message just received by the WebSocket
         self.message = message
 
         # messages to be sent by the WebSocket
         self.answer_message = None  # response message
-        self.broadcast_message = None  # to be sent to * clients connected
-        self.group_messages = {}  # to be sent to specific groups of clients
+
+        self.direct_messages = []  # to send direct messages to other connections
+        # each item must have at least two keys: "connection" and "message"
 
         # the attributes below are in case we are expected to close the socket
         self.must_close = False
@@ -59,8 +61,8 @@ class UnhandledProcessor(Processor):
     """
 
     def process(self):
-        message = Message(*self.message)
-        description = "Unsupported message {0}".format(self.message)
+        message = Message(*self.message.value)
+        description = "Unsupported message {0}".format(message.value)
         out_message = ErrorMessage(
             request_code=message.code,
             request_id=message.id,
@@ -78,6 +80,8 @@ class HelloProcessor(Processor):
         """
         Return WELCOME message based on the input HELLO message.
         """
+        # hello_message = HelloMessage(*self.message.value)
+        # TODO: assert realm is in allowed list
         welcome_message = WelcomeMessage()
         self.answer_message = welcome_message
 

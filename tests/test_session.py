@@ -18,7 +18,7 @@ class ClientConnectionTestCase(unittest.TestCase):
             "user_name": "Alex",
             "speaks_chinese": True,
             "id": 1111,
-            "topics": [],
+            "topics": {},
             "zombie": False,
             'zombification_datetime': None,
             "last_update": '1984-05-11T00:00:00'
@@ -35,6 +35,26 @@ class ClientConnectionTestCase(unittest.TestCase):
         self.assertEqual(connection.topics, [])
         self.assertTrue(connection.zombie)
 
+    def test_add_subscription_channel(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_subscription_channel(7, "start.wars")
+        expected_topics = {
+            "subscriber": {
+                "start.wars": 7
+            }
+        }
+        self.assertEqual(connection.topics, expected_topics)
+
+    def test_add_publishing_channel(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_publishing_channel(42, "reason.for.life")
+        expected_topics = {
+            "publisher": {
+                "reason.for.life": 42
+            }
+        }
+        self.assertEqual(connection.topics, expected_topics)
+
 
 class ConnectionDicttestCase(unittest.TestCase):
 
@@ -48,7 +68,7 @@ class ConnectionDicttestCase(unittest.TestCase):
             2222: {
                 "include": 1,
                 "id": 2222,
-                "topics": [],
+                "topics": {},
                 "zombie": False,
                 'zombification_datetime': None,
                 "last_update": '1950-04-06T00:00:00'

@@ -103,3 +103,44 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(error_message.details, {})
         expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
+
+    def test_subscribe_message(self):
+        subscribe_message = wamp.SubscribeMessage(request_id=1395, topic="lesson.1")
+        self.assertEqual(subscribe_message.code, wamp.SUBSCRIBE)
+        self.assertEqual(subscribe_message.request_id, 1395)
+        self.assertEqual(subscribe_message.options, {})
+        self.assertEqual(subscribe_message.topic, "lesson.1")
+        expected = [32, 1395, {}, "lesson.1"]
+        self.assertEqual(subscribe_message.value, expected)
+
+    def test_subscribed_message(self):
+        subscribed_message = wamp.SubscribedMessage(request_id=4872, subscription_id=653)
+        self.assertEqual(subscribed_message.code, wamp.SUBSCRIBED)
+        self.assertEqual(subscribed_message.request_id, 4872)
+        self.assertEqual(subscribed_message.subscription_id, 653)
+        expected = [33, 4872, 653]
+        self.assertEqual(subscribed_message.value, expected)
+
+    def test_publish_message(self):
+        publish_message = wamp.PublishMessage(request_id=514, topic="zazie")
+        self.assertEqual(publish_message.code, wamp.PUBLISH)
+        self.assertEqual(publish_message.request_id, 514)
+        self.assertEqual(publish_message.topic, "zazie")
+        expected = [16, 514, {}, "zazie"]
+        self.assertEqual(publish_message.value, expected)
+
+    def test_published_message(self):
+        published_message = wamp.PublishedMessage(request_id=681, publication_id=5092)
+        self.assertEqual(published_message.code, wamp.PUBLISHED)
+        self.assertEqual(published_message.request_id, 681)
+        self.assertEqual(published_message.publication_id, 5092)
+        expected = [17, 681, 5092]
+        self.assertEqual(published_message.value, expected)
+
+    def test_event_message(self):
+        event_message = wamp.EventMessage(subscription_id=74, publication_id=27)
+        self.assertEqual(event_message.code, wamp.EVENT)
+        self.assertEqual(event_message.subscription_id, 74)
+        self.assertEqual(event_message.publication_id, 27)
+        expected = [36, 74, 27, {}]
+        self.assertEqual(event_message.value, expected)

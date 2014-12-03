@@ -11,28 +11,28 @@ from tornwamp.identifier import create_global_id
 HELLO = 1
 WELCOME = 2
 ABORT = 3
-CHALLENGE = 4
-AUTHENTICATE = 5
+# CHALLENGE = 4
+# AUTHENTICATE = 5
 GOODBYE = 6
-HEARTBEAT = 7
+# HEARTBEAT = 7
 ERROR = 8
 PUBLISH = 16
 PUBLISHED = 17
 SUBSCRIBE = 32
 SUBSCRIBED = 33
-UNSUBSCRIBE = 34
-UNSUBSCRIBED = 35
+# UNSUBSCRIBE = 34
+# UNSUBSCRIBED = 35
 EVENT = 36
 CALL = 48
-CANCEL = 49
+# CANCEL = 49
 RESULT = 50
-REGISTER = 64
-REGISTERED = 65
-UNREGISTER = 66
-UNREGISTERED = 67
-INVOCATION = 68
-INTERRUPT = 69
-YIELD = 70
+# REGISTER = 64
+# REGISTERED = 65
+# UNREGISTER = 66
+# UNREGISTERED = 67
+# INVOCATION = 68
+# INTERRUPT = 69
+# YIELD = 70
 
 
 class Message(object):
@@ -41,9 +41,11 @@ class Message(object):
     """
     details = {}
 
-    def __init__(self, code, *args):
+    def __init__(self, code, *data, **kdata):
         self.code = code
-        self.value = [code] + list(args)
+        self.value = [code] + list(data)
+        self.args = kdata.get("args", [])
+        self.kwargs = kdata.get("kwargs", {})
 
     @property
     def id(self):
@@ -79,6 +81,18 @@ class Message(object):
         """
         raw = json.loads(text)
         return cls(*raw)
+
+    def _update_args_and_kargs(self):
+        """
+        Append args and kwargs to message value, according to their existance
+        or not.
+        """
+        if self.kwargs:
+            self.value.append(self.args)
+            self.value.append(self.kwargs)
+        else:
+            if self.args:
+                self.value.append(self.args)
 
 
 class HelloMessage(Message):
@@ -164,6 +178,57 @@ class GoodbyeMessage(Message):
         self.value = [self.code, self.details, self.reason]
 
 
+class ResultMessage(Message):
+    """
+    Result of a call as returned by Dealer to Caller.
+
+    [RESULT, CALL.Request|id, Details|dict]
+    [RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list]
+    [RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list, YIELD.ArgumentsKw|dict]
+    """
+
+    def __init__(self, code=RESULT, request_id=None, details=None, args=None, kwargs=None):
+        assert not request_id is None, "ResultMessage must have request_id"
+        self.code = code
+        self.request_id = request_id
+        self.details = details or {}
+        self.args = args or []
+        self.kwargs = kwargs or {}
+        self.value = [
+            self.code,
+            self.request_id,
+            self.details
+        ]
+        self._update_args_and_kargs()
+
+
+class CallMessage(Message):
+    """
+    Call as originally issued by the Caller to the Dealer.
+
+    [CALL, Request|id, Options|dict, Procedure|uri]
+    [CALL, Request|id, Options|dict, Procedure|uri, Arguments|list]
+    [CALL, Request|id, Options|dict, Procedure|uri, Arguments|list, ArgumentsKw|dict]
+    """
+
+    def __init__(self, code=CALL, request_id=None, options=None, procedure=None, args=None, kwargs=None):
+        assert not request_id is None, "CallMessage must have request_id"
+        assert not procedure is None, "CallMessage must have procedure"
+        self.code = code
+        self.request_id = request_id
+        self.options = options or {}
+        self.procedure = procedure
+        self.args = args or []
+        self.kwargs = kwargs or {}
+        self.value = [
+            self.code,
+            self.request_id,
+            self.options,
+            self.procedure,
+        ]
+        self._update_args_and_kargs()
+
+
 class ErrorMessage(Message):
     """
     Error reply sent by a Peer as an error response to different kinds of
@@ -187,23 +252,100 @@ class ErrorMessage(Message):
         self.uri = uri
         self.args = args or []
         self.kwargs = kwargs or {}
-
-    @property
-    def value(self):
-        """
-        Return value accordingly if args and/or kargs were provided.
-        """
-        data = [
+        self.value = [
             self.code,
             self.request_code,
             self.request_id,
             self.details,
             self.uri
         ]
-        if self.kwargs:
-            data.append(self.args)
-            data.append(self.kwargs)
-        else:
-            if self.args:
-                data.append(self.args)
-        return data
+        self._update_args_and_kargs()
+
+
+class SubscribeMessage(Message):
+    """
+    A Subscriber communicates its interest in a topic to the Server by sending
+    a SUBSCRIBE message:
+    [SUBSCRIBE, Request|id, Options|dict, Topic|uri]
+    """
+
+    def __init__(self, code=SUBSCRIBE, request_id=None, options=None, topic=None):
+        assert not request_id is None, "SubscribeMessage must have request_id"
+        assert not topic is None, "SubscribeMessage must have topic"
+        self.code = code
+        self.request_id = request_id
+        self.options = options or {}
+        self.topic = topic
+        self.value = [self.code, self.request_id, self.options, self.topic]
+
+
+class SubscribedMessage(Message):
+    """
+    If the Broker is able to fulfill and allow the subscription, it answers by
+    sending a SUBSCRIBED message to the Subscriber:
+    [SUBSCRIBED, SUBSCRIBE.Request|id, Subscription|id]
+    """
+    def __init__(self, code=SUBSCRIBED, request_id=None, subscription_id=None):
+        assert not request_id is None, "SubscribedMessage must have request_id"
+        assert not subscription_id is None, "SubscribedMessage must have subscription_id"
+        self.code = code
+        self.request_id = request_id
+        self.subscription_id = subscription_id
+        self.value = [self.code, self.request_id, self.subscription_id]
+
+
+class PublishMessage(Message):
+    """
+    Sent by a Publisher to a Broker to publish an event.
+
+    [PUBLISH, Request|id, Options|dict, Topic|uri]
+    [PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list]
+    [PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list, ArgumentsKw|dict]
+    """
+    def __init__(self, code=PUBLISH, request_id=None, options=None, topic=None, args=None, kwargs=None):
+        assert not request_id is None, "PublishMessage must have request_id"
+        assert not topic is None, "PublishMessage must have topic"
+        self.code = code
+        self.request_id = request_id
+        self.options = options or {}
+        self.topic = topic
+        self.args = args or []
+        self.kwargs = kwargs or {}
+        self.value = [self.code, self.request_id, self.options, self.topic]
+        self._update_args_and_kargs()
+
+
+class PublishedMessage(Message):
+    """
+    Acknowledge sent by a Broker to a Publisher for acknowledged publications.
+
+    [PUBLISHED, PUBLISH.Request|id, Publication|id]
+    """
+    def __init__(self, code=PUBLISHED, request_id=None, publication_id=None):
+        assert not request_id is None, "PublishedMessage must have request_id"
+        assert not publication_id is None, "PublishedMessage must have publication_id"
+        self.code = code
+        self.request_id = request_id
+        self.publication_id = publication_id
+        self.value = [self.code, self.request_id, self.publication_id]
+
+
+class EventMessage(Message):
+    """
+    Event dispatched by Broker to Subscribers for subscription the event was matching.
+
+    [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict]
+    [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list]
+    [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list, PUBLISH.ArgumentsKw|dict]
+    """
+    def __init__(self, code=EVENT, subscription_id=None, publication_id=None, details=None, args=None, kwargs=None):
+        assert not subscription_id is None, "EventMessage must have subscription_id"
+        assert not publication_id is None, "EventMessage must have publication_id"
+        self.code = code
+        self.subscription_id = subscription_id
+        self.publication_id = publication_id
+        self.details = details or {}
+        self.args = args or []
+        self.kwargs = kwargs or {}
+        self.value = [self.code, self.subscription_id, self.publication_id, self.details]
+        self._update_args_and_kargs()
