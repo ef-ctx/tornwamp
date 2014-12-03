@@ -67,9 +67,19 @@ class ClientConnection(object):
         """
         Add topic as a subscriber.
         """
-        topics = self.topics.get("subscriber", {})
-        topics[topic_name] = subscription_id
-        self.topics["subscriber"] = topics
+        self.topics.setdefault("subscriber", {topic_name: subscription_id})
+
+    def remove_subscription_channel(self, topic_name):
+        """
+        Remove topic as a subscriber.
+        """
+        self.topics.get("subscriber", {}).pop(topic_name, None)
+
+    def get_subscriber_topics(self):
+        topics = []
+        for topic_name in self.topics["subscriber"]:
+            topics.append(topic_name)
+        return topics
 
     def add_publishing_channel(self, subscription_id, topic_name):
         """
@@ -78,6 +88,18 @@ class ClientConnection(object):
         topics = self.topics.get("publisher", {})
         topics[topic_name] = subscription_id  # doing in this order to debug
         self.topics["publisher"] = topics
+
+    def remove_publishing_channel(self, topic_name):
+        """
+       Rmove topic as a publisher.
+        """
+        self.topics.get("publisher", {}).pop(topic_name, None)
+
+    def get_publisher_topics(self):
+        topics = []
+        for topic_name in self.topics["publisher"]:
+            topics.append(topic_name)
+        return topics
 
     @property
     def dict(self):

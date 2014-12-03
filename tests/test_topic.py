@@ -43,6 +43,21 @@ class TopicsManagerTestCase(unittest.TestCase):
         self.assertEqual(connection.name, "Dracula")
         self.assertTrue("romania" in connection.topics["subscriber"])
 
+    def test_remove_subscriber(self):
+        manager = TopicsManager()
+        connection = ClientConnection(None, name="Dracula")
+        manager.add_subscriber("romania", connection)
+        self.assertEqual(len(manager["romania"].subscribers), 1)
+        self.assertTrue("romania" in connection.topics["subscriber"])
+        manager.remove_subscriber("romania", connection)
+        self.assertEqual(len(manager["romania"].subscribers), 0)
+        self.assertFalse("romania" in connection.topics["subscriber"])
+
+    def test_remove_subscriber_inexistent_connection(self):
+        manager = TopicsManager()
+        answer = manager.remove_subscriber("inexistent", None)
+        self.assertIsNone(answer)
+
     def test_add_publisher(self):
         manager = TopicsManager()
         connection = ClientConnection(None, name="Frankenstein")
@@ -50,6 +65,34 @@ class TopicsManagerTestCase(unittest.TestCase):
         connection = manager["gernsheim"].publishers.pop()
         self.assertEqual(connection.name, "Frankenstein")
         self.assertTrue("gernsheim" in connection.topics["publisher"])
+
+    def test_remove_publisher(self):
+        manager = TopicsManager()
+        connection = ClientConnection(None, name="Frankenstein")
+        manager.add_publisher("gernsheim", connection)
+        self.assertEqual(len(manager["gernsheim"].publishers), 1)
+        self.assertTrue("gernsheim" in connection.topics["publisher"])
+        manager.remove_publisher("gernsheim", connection)
+        self.assertEqual(len(manager["gernsheim"].publishers), 0)
+        self.assertFalse("gernsheim" in connection.topics["publisher"])
+
+    def test_remove_publisher_inexistent_connection(self):
+        manager = TopicsManager()
+        answer = manager.remove_publisher("inexistent", None)
+        self.assertIsNone(answer)
+
+    def test_remove_connection(self):
+        manager = TopicsManager()
+        connection = ClientConnection(None, name="Drakenstein")
+        manager.add_publisher("gernsheim", connection)
+        self.assertEqual(len(manager["gernsheim"].publishers), 1)
+        self.assertTrue("gernsheim" in connection.topics["publisher"])
+        manager.add_subscriber("romania", connection)
+        self.assertEqual(len(manager["romania"].subscribers), 1)
+        self.assertTrue("romania" in connection.topics["subscriber"])
+        manager.remove_connection(connection)
+        self.assertEqual(len(manager["romania"].subscribers), 0)
+        self.assertEqual(len(manager["gernsheim"].publishers), 0)
 
     @patch("tornwamp.session.create_global_id", side_effect=[1, 2])
     @patch("tornwamp.topic.create_global_id", side_effect=[3, 4])
