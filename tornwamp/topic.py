@@ -56,13 +56,11 @@ class TopicsManager(dict):
         """
         for topic_name in connection.get_publisher_topics():
             topic = self.get(topic_name)
-            if topic:
-                topic.publishers.discard(connection)
+            topic.publishers.discard(connection) if topic else None
 
         for topic_name in connection.get_subscriber_topics():
             topic = self.get(topic_name)
-            if topic:
-                topic.subscribers.discard(connection)
+            topic.subscribers.discard(connection) if topic else None
 
     @property
     def dict(self):

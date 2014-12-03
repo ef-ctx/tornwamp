@@ -73,9 +73,7 @@ class ClientConnection(object):
         """
         Remove topic as a subscriber.
         """
-        topics = self.topics.get("subscriber")
-        if topics:
-            del topics[topic_name]
+        self.topics.get("subscriber", {}).pop(topic_name, None)
 
     def get_subscriber_topics(self):
         topics = []
@@ -95,9 +93,7 @@ class ClientConnection(object):
         """
        Rmove topic as a publisher.
         """
-        topics = self.topics.get("publisher")
-        if topics:
-            del topics[topic_name]
+        self.topics.get("publisher", {}).pop(topic_name, None)
 
     def get_publisher_topics(self):
         topics = []

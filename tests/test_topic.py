@@ -53,6 +53,11 @@ class TopicsManagerTestCase(unittest.TestCase):
         self.assertEqual(len(manager["romania"].subscribers), 0)
         self.assertFalse("romania" in connection.topics["subscriber"])
 
+    def test_remove_subscriber_inexistent_connection(self):
+        manager = TopicsManager()
+        answer = manager.remove_subscriber("inexistent", None)
+        self.assertIsNone(answer)
+
     def test_add_publisher(self):
         manager = TopicsManager()
         connection = ClientConnection(None, name="Frankenstein")
@@ -70,6 +75,11 @@ class TopicsManagerTestCase(unittest.TestCase):
         manager.remove_publisher("gernsheim", connection)
         self.assertEqual(len(manager["gernsheim"].publishers), 0)
         self.assertFalse("gernsheim" in connection.topics["publisher"])
+
+    def test_remove_publisher_inexistent_connection(self):
+        manager = TopicsManager()
+        answer = manager.remove_publisher("inexistent", None)
+        self.assertIsNone(answer)
 
     def test_remove_connection(self):
         manager = TopicsManager()

@@ -71,6 +71,7 @@ class ClientConnectionTestCase(unittest.TestCase):
         topics = connection.get_publisher_topics()
         self.assertEqual(sorted(topics), expected_topics)
 
+
 class ConnectionDicttestCase(unittest.TestCase):
 
     @patch("tornwamp.session.datetime")
