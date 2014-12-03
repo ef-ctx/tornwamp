@@ -26,9 +26,7 @@ class TopicsManager(dict):
         Remove a connection a topic's subscriber
         """
         topic = self.get(topic_name)
-        if topic is None:
-            return
-        if connection in topic.subscribers:
+        if topic and connection in topic.subscribers:
             topic.subscribers.discard(connection)
             connection.remove_subscription_channel(topic_name)
 
@@ -48,9 +46,7 @@ class TopicsManager(dict):
         Remove a connection a topic's subscriber
         """
         topic = self.get(topic_name)
-        if topic is None:
-            return
-        if connection in topic.publishers:
+        if topic and connection in topic.publishers:
             topic.publishers.discard(connection)
             connection.remove_publishing_channel(topic_name)
 
