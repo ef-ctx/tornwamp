@@ -71,7 +71,7 @@ class MessageTestCase(unittest.TestCase):
         )
         self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [Code.ERROR, 2, 3126, {}, "some.very.buggy.error"]
+        expected = [8, 2, 3126, {}, "some.very.buggy.error"]
         self.assertEqual(error_message.value, expected)
 
     def test_error_message_missing_request_code(self):
@@ -90,7 +90,7 @@ class MessageTestCase(unittest.TestCase):
         )
         self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [Code.ERROR, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
+        expected = [8, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
         self.assertEqual(error_message.value, expected)
 
     def test_error_message_args_only(self):
@@ -102,7 +102,7 @@ class MessageTestCase(unittest.TestCase):
         )
         self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [Code.ERROR, 4, 8259, {}, "light.bug", ["banana"]]
+        expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
 
     def test_subscribe_message(self):
@@ -111,7 +111,7 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(subscribe_message.request_id, 1395)
         self.assertEqual(subscribe_message.options, {})
         self.assertEqual(subscribe_message.topic, "lesson.1")
-        expected = [Code.SUBSCRIBE, 1395, {}, "lesson.1"]
+        expected = [32, 1395, {}, "lesson.1"]
         self.assertEqual(subscribe_message.value, expected)
 
     def test_subscribed_message(self):
@@ -119,7 +119,7 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(subscribed_message.code, Code.SUBSCRIBED)
         self.assertEqual(subscribed_message.request_id, 4872)
         self.assertEqual(subscribed_message.subscription_id, 653)
-        expected = [Code.SUBSCRIBED, 4872, 653]
+        expected = [33, 4872, 653]
         self.assertEqual(subscribed_message.value, expected)
 
     def test_publish_message(self):
@@ -127,7 +127,7 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(publish_message.code, Code.PUBLISH)
         self.assertEqual(publish_message.request_id, 514)
         self.assertEqual(publish_message.topic, "zazie")
-        expected = [Code.PUBLISH, 514, {}, "zazie"]
+        expected = [16, 514, {}, "zazie"]
         self.assertEqual(publish_message.value, expected)
 
     def test_published_message(self):
@@ -135,7 +135,7 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(published_message.code, Code.PUBLISHED)
         self.assertEqual(published_message.request_id, 681)
         self.assertEqual(published_message.publication_id, 5092)
-        expected = [Code.PUBLISHED, 681, 5092]
+        expected = [17, 681, 5092]
         self.assertEqual(published_message.value, expected)
 
     def test_event_message(self):
@@ -143,5 +143,5 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(event_message.code, Code.EVENT)
         self.assertEqual(event_message.subscription_id, 74)
         self.assertEqual(event_message.publication_id, 27)
-        expected = [Code.EVENT, 74, 27, {}]
+        expected = [36, 74, 27, {}]
         self.assertEqual(event_message.value, expected)

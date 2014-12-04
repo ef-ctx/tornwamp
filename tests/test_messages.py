@@ -71,7 +71,7 @@ class MessageTestCase(unittest.TestCase):
         )
         self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [Code.ERROR, 2, 3126, {}, "some.very.buggy.error"]
+        expected = [8, 2, 3126, {}, "some.very.buggy.error"]
         self.assertEqual(error_message.value, expected)
 
     def test_error_message_missing_request_code(self):
@@ -90,7 +90,7 @@ class MessageTestCase(unittest.TestCase):
         )
         self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [Code.ERROR, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
+        expected = [8, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
         self.assertEqual(error_message.value, expected)
 
     def test_error_message_args_only(self):
@@ -102,7 +102,7 @@ class MessageTestCase(unittest.TestCase):
         )
         self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [Code.ERROR, 4, 8259, {}, "light.bug", ["banana"]]
+        expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
 
     def test_result_message(self):
@@ -111,5 +111,5 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(result_message.details, {})
         self.assertEqual(result_message.args, [])
         self.assertEqual(result_message.kwargs, {})
-        expected = [Code.RESULT, 8259, {}]
+        expected = [50, 8259, {}]
         self.assertEqual(result_message.value, expected)
