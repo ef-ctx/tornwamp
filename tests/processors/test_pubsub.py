@@ -5,9 +5,6 @@ from tornwamp.messages import ERROR, PublishMessage, PUBLISH, PUBLISHED, Subscri
 from tornwamp.processors.pubsub import PublishProcessor, SubscribeProcessor
 from tornwamp.session import ClientConnection
 
-#tornwamp.processors.pubsub                25      9      4      2    62%   44-60
-#tornwamp.processors.pubsub.customize      18      9      2      2    45%   16, 41-56
-
 
 class SubscribeProcessorTestCase(unittest.TestCase):
 
