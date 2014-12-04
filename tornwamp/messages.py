@@ -9,6 +9,7 @@ import json
 from tornwamp.identifier import create_global_id
 from enum import IntEnum
 
+
 class Code(IntEnum):
     HELLO = 1
     WELCOME = 2
@@ -84,7 +85,7 @@ class Message(object):
         Decode text to JSON and return a Message object accordingly.
         """
         raw = json.loads(text)
-        raw[0] = Code(raw[0]) # make it an object of type Code
+        raw[0] = Code(raw[0])  # make it an object of type Code
         return cls(*raw)
 
     def _update_args_and_kargs(self):
