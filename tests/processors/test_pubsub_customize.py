@@ -1,7 +1,7 @@
 import unittest
 
 from tornwamp import topic
-from tornwamp.messages import Code, PublishMessage
+from tornwamp.messages import Code, PublishMessage, SubscribeMessage
 from tornwamp.processors.pubsub import customize
 from tornwamp.session import ClientConnection
 from tornwamp.topic import Topic
@@ -18,10 +18,10 @@ class CustomizeTestCase(unittest.TestCase):
     def tearDown(self):
         topic.topics = self.original_topics
 
-    def test_get_direct_messages(self):
+    def test_get_publish_direct_messages(self):
         msg = PublishMessage(request_id=168206, topic="education.first", kwargs={"type": "someMessage"})
         pub_id = 91537
-        items = customize.get_direct_messages(msg, pub_id)
+        items = customize.get_publish_direct_messages(msg, pub_id)
         self.assertEqual(len(items), 1)
         user_id = items[0]["connection"].user_id
         message = items[0]["message"]
@@ -30,3 +30,9 @@ class CustomizeTestCase(unittest.TestCase):
         self.assertEqual(message.subscription_id, 18273)
         self.assertEqual(message.publication_id, 91537)
         self.assertEqual(message.kwargs, {"type": "someMessage"})
+
+    def test_get_subscribe_direct_messages(self):
+        msg = SubscribeMessage(request_id=9581, topic="dolphins.are.non.human.people")
+        subscription_id = 637
+        items = customize.get_subscribe_direct_messages(msg, subscription_id)
+        self.assertEqual(items, [])
