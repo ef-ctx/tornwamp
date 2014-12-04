@@ -7,25 +7,28 @@ https://github.com/tavendo/WAMP/blob/master/spec/basic.md
 
 import json
 from tornwamp.identifier import create_global_id
+from enum import IntEnum
 
-HELLO = 1
-WELCOME = 2
-ABORT = 3
+
+class Code(IntEnum):
+    HELLO = 1
+    WELCOME = 2
+    ABORT = 3
 # CHALLENGE = 4
 # AUTHENTICATE = 5
-GOODBYE = 6
+    GOODBYE = 6
 # HEARTBEAT = 7
-ERROR = 8
-PUBLISH = 16
-PUBLISHED = 17
-SUBSCRIBE = 32
-SUBSCRIBED = 33
+    ERROR = 8
+    PUBLISH = 16
+    PUBLISHED = 17
+    SUBSCRIBE = 32
+    SUBSCRIBED = 33
 # UNSUBSCRIBE = 34
 # UNSUBSCRIBED = 35
-EVENT = 36
-CALL = 48
+    EVENT = 36
+    CALL = 48
 # CANCEL = 49
-RESULT = 50
+    RESULT = 50
 # REGISTER = 64
 # REGISTERED = 65
 # UNREGISTER = 66
@@ -62,7 +65,9 @@ class Message(object):
         """
         Create a JSON representation of this message.
         """
-        return json.dumps(self.value)
+        transform = self.value
+        transform[0] = transform[0].value  # it is an object of type Code
+        return json.dumps(transform)
 
     def error(self, text, info=None):
         """
@@ -80,6 +85,7 @@ class Message(object):
         Decode text to JSON and return a Message object accordingly.
         """
         raw = json.loads(text)
+        raw[0] = Code(raw[0])  # make it an object of type Code
         return cls(*raw)
 
     def _update_args_and_kargs(self):
@@ -103,7 +109,7 @@ class HelloMessage(Message):
     https://github.com/tavendo/WAMP/blob/master/spec/basic.md#hello
     """
 
-    def __init__(self, code=HELLO, realm="", details=None):
+    def __init__(self, code=Code.HELLO, realm="", details=None):
         self.code = code
         self.realm = realm
         self.details = details if details else {}
@@ -118,7 +124,7 @@ class AbortMessage(Message):
     https://github.com/tavendo/WAMP/blob/master/spec/basic.md#abort
     """
 
-    def __init__(self, code=ABORT, details=None, reason=None):
+    def __init__(self, code=Code.ABORT, details=None, reason=None):
         assert not reason is None, "AbortMessage must have a reason"
         self.code = code
         self.details = details or {}
@@ -158,7 +164,7 @@ class WelcomeMessage(Message):
     https://github.com/tavendo/WAMP/blob/master/spec/basic.md#welcome
     """
 
-    def __init__(self, code=WELCOME, session_id=None, details=None):
+    def __init__(self, code=Code.WELCOME, session_id=None, details=None):
         self.code = code
         self.session_id = session_id or create_global_id()
         self.details = details or DEFAULT_WELCOME_DETAILS
@@ -171,7 +177,7 @@ class GoodbyeMessage(Message):
     [ABORT, Details|dict, Reason|uri]
     """
 
-    def __init__(self, code=GOODBYE, details=None, reason=None):
+    def __init__(self, code=Code.GOODBYE, details=None, reason=None):
         self.code = code
         self.details = details or {}
         self.reason = reason or ""
@@ -187,7 +193,7 @@ class ResultMessage(Message):
     [RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list, YIELD.ArgumentsKw|dict]
     """
 
-    def __init__(self, code=RESULT, request_id=None, details=None, args=None, kwargs=None):
+    def __init__(self, code=Code.RESULT, request_id=None, details=None, args=None, kwargs=None):
         assert not request_id is None, "ResultMessage must have request_id"
         self.code = code
         self.request_id = request_id
@@ -211,7 +217,7 @@ class CallMessage(Message):
     [CALL, Request|id, Options|dict, Procedure|uri, Arguments|list, ArgumentsKw|dict]
     """
 
-    def __init__(self, code=CALL, request_id=None, options=None, procedure=None, args=None, kwargs=None):
+    def __init__(self, code=Code.CALL, request_id=None, options=None, procedure=None, args=None, kwargs=None):
         assert not request_id is None, "CallMessage must have request_id"
         assert not procedure is None, "CallMessage must have procedure"
         self.code = code
@@ -241,7 +247,7 @@ class ErrorMessage(Message):
         Arguments|list, ArgumentsKw|dict]
     """
 
-    def __init__(self, code=ERROR, request_code=None, request_id=None, details=None, uri=None, args=None, kwargs=None):
+    def __init__(self, code=Code.ERROR, request_code=None, request_id=None, details=None, uri=None, args=None, kwargs=None):
         assert not request_code is None, "ErrorMessage must have request_code"
         assert not request_id is None, "ErrorMessage must have request_id"
         assert not uri is None, "ErrorMessage must have uri"
@@ -269,7 +275,7 @@ class SubscribeMessage(Message):
     [SUBSCRIBE, Request|id, Options|dict, Topic|uri]
     """
 
-    def __init__(self, code=SUBSCRIBE, request_id=None, options=None, topic=None):
+    def __init__(self, code=Code.SUBSCRIBE, request_id=None, options=None, topic=None):
         assert not request_id is None, "SubscribeMessage must have request_id"
         assert not topic is None, "SubscribeMessage must have topic"
         self.code = code
@@ -285,7 +291,7 @@ class SubscribedMessage(Message):
     sending a SUBSCRIBED message to the Subscriber:
     [SUBSCRIBED, SUBSCRIBE.Request|id, Subscription|id]
     """
-    def __init__(self, code=SUBSCRIBED, request_id=None, subscription_id=None):
+    def __init__(self, code=Code.SUBSCRIBED, request_id=None, subscription_id=None):
         assert not request_id is None, "SubscribedMessage must have request_id"
         assert not subscription_id is None, "SubscribedMessage must have subscription_id"
         self.code = code
@@ -302,7 +308,7 @@ class PublishMessage(Message):
     [PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list]
     [PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list, ArgumentsKw|dict]
     """
-    def __init__(self, code=PUBLISH, request_id=None, options=None, topic=None, args=None, kwargs=None):
+    def __init__(self, code=Code.PUBLISH, request_id=None, options=None, topic=None, args=None, kwargs=None):
         assert not request_id is None, "PublishMessage must have request_id"
         assert not topic is None, "PublishMessage must have topic"
         self.code = code
@@ -321,7 +327,7 @@ class PublishedMessage(Message):
 
     [PUBLISHED, PUBLISH.Request|id, Publication|id]
     """
-    def __init__(self, code=PUBLISHED, request_id=None, publication_id=None):
+    def __init__(self, code=Code.PUBLISHED, request_id=None, publication_id=None):
         assert not request_id is None, "PublishedMessage must have request_id"
         assert not publication_id is None, "PublishedMessage must have publication_id"
         self.code = code
@@ -338,7 +344,7 @@ class EventMessage(Message):
     [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list]
     [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list, PUBLISH.ArgumentsKw|dict]
     """
-    def __init__(self, code=EVENT, subscription_id=None, publication_id=None, details=None, args=None, kwargs=None):
+    def __init__(self, code=Code.EVENT, subscription_id=None, publication_id=None, details=None, args=None, kwargs=None):
         assert not subscription_id is None, "EventMessage must have subscription_id"
         assert not publication_id is None, "EventMessage must have publication_id"
         self.code = code

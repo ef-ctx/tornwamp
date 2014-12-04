@@ -1,6 +1,6 @@
 import unittest
 
-from tornwamp.messages import GoodbyeMessage, HelloMessage, ERROR, GOODBYE, Message, WELCOME
+from tornwamp.messages import GoodbyeMessage, HelloMessage, Message, Code
 from tornwamp.processors import Processor, GoodbyeProcessor, HelloProcessor,\
     UnhandledProcessor
 
@@ -26,7 +26,7 @@ class ProcessorTestCase(unittest.TestCase):
         processor = UnhandledProcessor(message, connection)
         details = "Unsupported message [456, 34, 'wamp.undefined.message']"
         response = processor.answer_message
-        self.assertEqual(response.code, ERROR)
+        self.assertEqual(response.code, Code.ERROR)
         self.assertEqual(response.details["message"], details)
         self.assertEqual(response.uri, "wamp.unsupported.message")
         self.assertEqual(processor.must_close, False)
@@ -35,13 +35,13 @@ class ProcessorTestCase(unittest.TestCase):
         message = HelloMessage(realm="earth")
         processor = HelloProcessor(message, connection)
         response = processor.answer_message
-        self.assertEqual(response.code, WELCOME)
+        self.assertEqual(response.code, Code.WELCOME)
 
     def test_goodbye_processor(self):
         message = GoodbyeMessage(details={"message": "adios"}, reason="i.dont.like.you")
         processor = GoodbyeProcessor(message, connection)
         response = processor.answer_message
-        self.assertEqual(response.code, GOODBYE)
+        self.assertEqual(response.code, Code.GOODBYE)
         self.assertEqual(response.details, {"message": "adios"})
         self.assertEqual(response.reason, "i.dont.like.you")
         self.assertTrue(processor.must_close)
