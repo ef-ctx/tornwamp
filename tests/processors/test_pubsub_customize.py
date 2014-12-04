@@ -1,7 +1,7 @@
 import unittest
 
 from tornwamp import topic
-from tornwamp.messages import EVENT, PublishMessage
+from tornwamp.messages import Code, PublishMessage
 from tornwamp.processors.pubsub import customize
 from tornwamp.session import ClientConnection
 from tornwamp.topic import Topic
@@ -26,7 +26,7 @@ class CustomizeTestCase(unittest.TestCase):
         user_id = items[0]["connection"].user_id
         message = items[0]["message"]
         self.assertEqual(user_id, 7471)
-        self.assertEqual(message.code, EVENT)
+        self.assertEqual(message.code, Code.EVENT)
         self.assertEqual(message.subscription_id, 18273)
         self.assertEqual(message.publication_id, 91537)
         self.assertEqual(message.kwargs, {"type": "someMessage"})

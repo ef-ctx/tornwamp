@@ -1,7 +1,7 @@
 import unittest
 
 from mock import patch
-from tornwamp.messages import ERROR, PublishMessage, PUBLISH, PUBLISHED, SubscribeMessage, SUBSCRIBE, SUBSCRIBED
+from tornwamp.messages import Code, PublishMessage, SubscribeMessage
 from tornwamp.processors.pubsub import PublishProcessor, SubscribeProcessor
 from tornwamp.session import ClientConnection
 
@@ -13,7 +13,7 @@ class SubscribeProcessorTestCase(unittest.TestCase):
         connection = ClientConnection(None)
         processor = SubscribeProcessor(message, connection)
         answer = processor.answer_message
-        self.assertEqual(answer.code, SUBSCRIBED)
+        self.assertEqual(answer.code, Code.SUBSCRIBED)
         self.assertEqual(answer.request_id, 123)
 
     @patch("tornwamp.processors.pubsub.customize.authorize_subscription", return_value=(False, "Your problem"))
@@ -22,9 +22,9 @@ class SubscribeProcessorTestCase(unittest.TestCase):
         connection = ClientConnection(None)
         processor = SubscribeProcessor(message, connection)
         answer = processor.answer_message
-        self.assertEqual(answer.code, ERROR)
+        self.assertEqual(answer.code, Code.ERROR)
         self.assertEqual(answer.request_id, 234)
-        self.assertEqual(answer.request_code, SUBSCRIBE)
+        self.assertEqual(answer.request_code, Code.SUBSCRIBE)
         self.assertEqual(answer.uri, "tornwamp.subscribe.unauthorized")
 
 
@@ -35,7 +35,7 @@ class PublishProcessorTestCase(unittest.TestCase):
         connection = ClientConnection(None)
         processor = PublishProcessor(message, connection)
         answer = processor.answer_message
-        self.assertEqual(answer.code, PUBLISHED)
+        self.assertEqual(answer.code, Code.PUBLISHED)
         self.assertEqual(answer.request_id, 345)
 
     @patch("tornwamp.processors.pubsub.customize.authorize_publication", return_value=(False, "Your problem"))
@@ -44,7 +44,7 @@ class PublishProcessorTestCase(unittest.TestCase):
         connection = ClientConnection(None)
         processor = PublishProcessor(message, connection)
         answer = processor.answer_message
-        self.assertEqual(answer.code, ERROR)
+        self.assertEqual(answer.code, Code.ERROR)
         self.assertEqual(answer.request_id, 456)
-        self.assertEqual(answer.request_code, PUBLISH)
+        self.assertEqual(answer.request_code, Code.PUBLISH)
         self.assertEqual(answer.uri, "tornwamp.publish.unauthorized")

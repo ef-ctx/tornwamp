@@ -1,15 +1,16 @@
 import unittest
 
 from tornwamp import messages as wamp
+from tornwamp.messages import Code
 from tornwamp.identifier import MIN_ID, MAX_ID
 
 
 class MessageTestCase(unittest.TestCase):
 
     def test_base_message(self):
-        raw = [1, "somerealm", {}]
+        raw = [Code.HELLO, "somerealm", {}]
         message = wamp.Message(*raw)
-        self.assertEqual(message.code, wamp.HELLO)
+        self.assertEqual(message.code, Code.HELLO)
         self.assertEqual(message.value, raw)
         self.assertEqual(message.json, '[1, "somerealm", {}]')
 
@@ -35,7 +36,7 @@ class MessageTestCase(unittest.TestCase):
 
     def test_hello_message(self):
         hello_message = wamp.HelloMessage(realm="world", details={"roles": {}})
-        self.assertEqual(hello_message.code, wamp.HELLO)
+        self.assertEqual(hello_message.code, Code.HELLO)
         self.assertEqual(hello_message.realm, "world")
         self.assertEqual(hello_message.details, {"roles": {}})
         self.assertEqual(hello_message.json, '[1, "world", {"roles": {}}]')
@@ -43,7 +44,7 @@ class MessageTestCase(unittest.TestCase):
     def test_abort_message(self):
         abort_message = wamp.AbortMessage(reason="user.unauthorized")
         abort_message.error("Invalid cookie")
-        self.assertEqual(abort_message.code, wamp.ABORT)
+        self.assertEqual(abort_message.code, Code.ABORT)
         self.assertEqual(abort_message.details, {"message": "Invalid cookie"})
         self.assertEqual(abort_message.reason, "user.unauthorized")
         expected = '[3, {"message": "Invalid cookie"}, "user.unauthorized"]'
@@ -58,7 +59,7 @@ class MessageTestCase(unittest.TestCase):
 
     def test_welcome_message(self):
         abort_message = wamp.WelcomeMessage()
-        self.assertEqual(abort_message.code, wamp.WELCOME)
+        self.assertEqual(abort_message.code, Code.WELCOME)
         self.assertEqual(abort_message.details, wamp.DEFAULT_WELCOME_DETAILS)
         self.assertTrue(MIN_ID < abort_message.session_id < MAX_ID)
 
@@ -68,7 +69,7 @@ class MessageTestCase(unittest.TestCase):
             request_id=3126,
             uri="some.very.buggy.error"
         )
-        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
         expected = [8, 2, 3126, {}, "some.very.buggy.error"]
         self.assertEqual(error_message.value, expected)
@@ -87,7 +88,7 @@ class MessageTestCase(unittest.TestCase):
             uri="horrible.exception",
             kwargs={'a': 1}
         )
-        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
         expected = [8, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
         self.assertEqual(error_message.value, expected)
@@ -99,14 +100,14 @@ class MessageTestCase(unittest.TestCase):
             uri="light.bug",
             args=["banana"]
         )
-        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
         expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
 
     def test_result_message(self):
         result_message = wamp.ResultMessage(request_id=8259)
-        self.assertEqual(result_message.code, wamp.RESULT)
+        self.assertEqual(result_message.code, Code.RESULT)
         self.assertEqual(result_message.details, {})
         self.assertEqual(result_message.args, [])
         self.assertEqual(result_message.kwargs, {})

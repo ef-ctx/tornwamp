@@ -1,6 +1,6 @@
 import unittest
 
-from tornwamp.messages import CallMessage, ResultMessage, CALL, ERROR, RESULT
+from tornwamp.messages import CallMessage, ResultMessage, Code
 from tornwamp.processors.rpc import CallProcessor
 
 
@@ -17,7 +17,7 @@ class CallProcessorTestCase(unittest.TestCase):
         message = CallMessage(request_id=918273, procedure="ping")
         processor = CallProcessor(message, connection)
         response = processor.answer_message
-        self.assertEqual(response.code, RESULT)
+        self.assertEqual(response.code, Code.RESULT)
         self.assertEqual(response.request_id, 918273)
         self.assertEqual(response.args[0], "Ping response")
 
@@ -25,7 +25,7 @@ class CallProcessorTestCase(unittest.TestCase):
         message = CallMessage(request_id=192837, procedure="abc")
         processor = CallProcessor(message, connection)
         response = processor.answer_message
-        self.assertEqual(response.code, ERROR)
+        self.assertEqual(response.code, Code.ERROR)
         self.assertEqual(response.request_id, 192837)
         self.assertEqual(response.uri, 'wamp.rpc.unsupported.procedure')
         self.assertEqual(response.details["message"], "The procedure abc doesn't exist")
