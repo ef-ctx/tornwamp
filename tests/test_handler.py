@@ -5,7 +5,7 @@ from tornado.web import Application
 from tornado.websocket import websocket_connect
 
 from tornwamp.handler import WAMPHandler
-from tornwamp.messages import ABORT, AbortMessage, GOODBYE, GoodbyeMessage, HelloMessage, Message, WELCOME
+from tornwamp.messages import Code, AbortMessage, GoodbyeMessage, HelloMessage, Message
 
 
 class UnauthorizeWAMPHandler(WAMPHandler):
@@ -40,7 +40,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
 
         response = yield ws.read_message()
         message = Message.from_text(response)
-        self.assertIs(message.code, WELCOME)
+        self.assertIs(message.code, Code.WELCOME)
         self.assertFalse(getattr(ws, "close_code", False))
         ws.close()
 
@@ -51,7 +51,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         text = yield ws.read_message()
 
         message = AbortMessage.from_text(text)
-        self.assertIs(message.code, ABORT)
+        self.assertIs(message.code, Code.ABORT)
         self.assertEqual(message.reason, 'tornwamp.error.unauthorized')
         self.assertEqual(message.details['message'], "Denied")
 
@@ -70,7 +70,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
 
         text = yield ws.read_message()
         message = GoodbyeMessage.from_text(text)
-        self.assertIs(message.code, GOODBYE)
+        self.assertIs(message.code, Code.GOODBYE)
         self.assertEqual(message.reason, 'close.up')
         self.assertEqual(message.details['message'], "Closing for test purposes")
 

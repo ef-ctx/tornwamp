@@ -1,15 +1,16 @@
 import unittest
 
 from tornwamp import messages as wamp
+from tornwamp.messages import Code
 from tornwamp.identifier import MIN_ID, MAX_ID
 
 
 class MessageTestCase(unittest.TestCase):
 
     def test_base_message(self):
-        raw = [1, "somerealm", {}]
+        raw = [Code.HELLO, "somerealm", {}]
         message = wamp.Message(*raw)
-        self.assertEqual(message.code, wamp.HELLO)
+        self.assertEqual(message.code, Code.HELLO)
         self.assertEqual(message.value, raw)
         self.assertEqual(message.json, '[1, "somerealm", {}]')
 
@@ -35,7 +36,7 @@ class MessageTestCase(unittest.TestCase):
 
     def test_hello_message(self):
         hello_message = wamp.HelloMessage(realm="world", details={"roles": {}})
-        self.assertEqual(hello_message.code, wamp.HELLO)
+        self.assertEqual(hello_message.code, Code.HELLO)
         self.assertEqual(hello_message.realm, "world")
         self.assertEqual(hello_message.details, {"roles": {}})
         self.assertEqual(hello_message.json, '[1, "world", {"roles": {}}]')
@@ -43,7 +44,7 @@ class MessageTestCase(unittest.TestCase):
     def test_abort_message(self):
         abort_message = wamp.AbortMessage(reason="user.unauthorized")
         abort_message.error("Invalid cookie")
-        self.assertEqual(abort_message.code, wamp.ABORT)
+        self.assertEqual(abort_message.code, Code.ABORT)
         self.assertEqual(abort_message.details, {"message": "Invalid cookie"})
         self.assertEqual(abort_message.reason, "user.unauthorized")
         expected = '[3, {"message": "Invalid cookie"}, "user.unauthorized"]'
@@ -58,7 +59,7 @@ class MessageTestCase(unittest.TestCase):
 
     def test_welcome_message(self):
         abort_message = wamp.WelcomeMessage()
-        self.assertEqual(abort_message.code, wamp.WELCOME)
+        self.assertEqual(abort_message.code, Code.WELCOME)
         self.assertEqual(abort_message.details, wamp.DEFAULT_WELCOME_DETAILS)
         self.assertTrue(MIN_ID < abort_message.session_id < MAX_ID)
 
@@ -68,9 +69,9 @@ class MessageTestCase(unittest.TestCase):
             request_id=3126,
             uri="some.very.buggy.error"
         )
-        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [8, 2, 3126, {}, "some.very.buggy.error"]
+        expected = [Code.ERROR, 2, 3126, {}, "some.very.buggy.error"]
         self.assertEqual(error_message.value, expected)
 
     def test_error_message_missing_request_code(self):
@@ -87,9 +88,9 @@ class MessageTestCase(unittest.TestCase):
             uri="horrible.exception",
             kwargs={'a': 1}
         )
-        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [8, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
+        expected = [Code.ERROR, 3, 7432, {}, "horrible.exception", [], {'a': 1}]
         self.assertEqual(error_message.value, expected)
 
     def test_error_message_args_only(self):
@@ -99,48 +100,48 @@ class MessageTestCase(unittest.TestCase):
             uri="light.bug",
             args=["banana"]
         )
-        self.assertEqual(error_message.code, wamp.ERROR)
+        self.assertEqual(error_message.code, Code.ERROR)
         self.assertEqual(error_message.details, {})
-        expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
+        expected = [Code.ERROR, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
 
     def test_subscribe_message(self):
         subscribe_message = wamp.SubscribeMessage(request_id=1395, topic="lesson.1")
-        self.assertEqual(subscribe_message.code, wamp.SUBSCRIBE)
+        self.assertEqual(subscribe_message.code, Code.SUBSCRIBE)
         self.assertEqual(subscribe_message.request_id, 1395)
         self.assertEqual(subscribe_message.options, {})
         self.assertEqual(subscribe_message.topic, "lesson.1")
-        expected = [32, 1395, {}, "lesson.1"]
+        expected = [Code.SUBSCRIBE, 1395, {}, "lesson.1"]
         self.assertEqual(subscribe_message.value, expected)
 
     def test_subscribed_message(self):
         subscribed_message = wamp.SubscribedMessage(request_id=4872, subscription_id=653)
-        self.assertEqual(subscribed_message.code, wamp.SUBSCRIBED)
+        self.assertEqual(subscribed_message.code, Code.SUBSCRIBED)
         self.assertEqual(subscribed_message.request_id, 4872)
         self.assertEqual(subscribed_message.subscription_id, 653)
-        expected = [33, 4872, 653]
+        expected = [Code.SUBSCRIBED, 4872, 653]
         self.assertEqual(subscribed_message.value, expected)
 
     def test_publish_message(self):
         publish_message = wamp.PublishMessage(request_id=514, topic="zazie")
-        self.assertEqual(publish_message.code, wamp.PUBLISH)
+        self.assertEqual(publish_message.code, Code.PUBLISH)
         self.assertEqual(publish_message.request_id, 514)
         self.assertEqual(publish_message.topic, "zazie")
-        expected = [16, 514, {}, "zazie"]
+        expected = [Code.PUBLISH, 514, {}, "zazie"]
         self.assertEqual(publish_message.value, expected)
 
     def test_published_message(self):
         published_message = wamp.PublishedMessage(request_id=681, publication_id=5092)
-        self.assertEqual(published_message.code, wamp.PUBLISHED)
+        self.assertEqual(published_message.code, Code.PUBLISHED)
         self.assertEqual(published_message.request_id, 681)
         self.assertEqual(published_message.publication_id, 5092)
-        expected = [17, 681, 5092]
+        expected = [Code.PUBLISHED, 681, 5092]
         self.assertEqual(published_message.value, expected)
 
     def test_event_message(self):
         event_message = wamp.EventMessage(subscription_id=74, publication_id=27)
-        self.assertEqual(event_message.code, wamp.EVENT)
+        self.assertEqual(event_message.code, Code.EVENT)
         self.assertEqual(event_message.subscription_id, 74)
         self.assertEqual(event_message.publication_id, 27)
-        expected = [36, 74, 27, {}]
+        expected = [Code.EVENT, 74, 27, {}]
         self.assertEqual(event_message.value, expected)
