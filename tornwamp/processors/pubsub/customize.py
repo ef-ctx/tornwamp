@@ -37,10 +37,18 @@ def add_subscriber(topic, connection):
     return subscription_id
 
 
-def get_direct_messages(publish_message, publication_id):
+def get_subscribe_direct_messages(subscribed_message, subscription_id):
     """
-    Return a list of dictionaries containing lists of connections and what
-    message they should receive.
+    Return a list of dictionaries containing connections and what message they
+    should receive. This is called from SubscribeProcessor when it succeeds.
+    """
+    return []
+
+
+def get_publish_direct_messages(publish_message, publication_id):
+    """
+    Return a list of dictionaries containing connections and what message they
+    should receive. This is called from PublishProcessor when it succeeds.
     """
     data = []
     topic_name = publish_message.topic

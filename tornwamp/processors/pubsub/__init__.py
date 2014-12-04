@@ -18,11 +18,12 @@ class SubscribeProcessor(Processor):
         received_message = SubscribeMessage(*self.message.value)
         allow, msg = customize.authorize_subscription(received_message.topic, self.connection)
         if allow:
-            new_id = customize.add_subscriber(received_message.topic, self.connection)
+            subscription_id = customize.add_subscriber(received_message.topic, self.connection)
             answer = SubscribedMessage(
                 request_id=received_message.request_id,
-                subscription_id=new_id
+                subscription_id=subscription_id
             )
+            self.direct_messages = customize.get_subscribe_direct_messages(received_message, subscription_id)
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
@@ -49,7 +50,7 @@ class PublishProcessor(Processor):
                 request_id=received_message.request_id,
                 publication_id=publication_id
             )
-            self.direct_messages = customize.get_direct_messages(received_message, publication_id)
+            self.direct_messages = customize.get_publish_direct_messages(received_message, publication_id)
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
