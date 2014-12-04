@@ -53,6 +53,13 @@ class ClientConnectionTestCase(unittest.TestCase):
         topics = connection.get_subscriber_topics()
         self.assertEqual(sorted(topics), expected_topics)
 
+    def test_get_subscription_id(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_subscription_channel(5, "a.new.hope")
+        connection.add_subscription_channel(6, "the.empire.strikes.back")
+        subscription_id = connection.get_subscription_id("a.new.hope")
+        self.assertEqual(subscription_id, 5)
+
     def test_add_publishing_channel(self):
         connection = ClientConnection(websocket=None)
         connection.add_publishing_channel(42, "reason.for.life")

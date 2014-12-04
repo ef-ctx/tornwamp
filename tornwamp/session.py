@@ -67,7 +67,7 @@ class ClientConnection(object):
         """
         Return connection's subscription_id for a specific topic.
         """
-        return self.topics["subscriber"], get(topic_name)
+        return self.topics["subscriber"].get(topic_name)
 
     def add_subscription_channel(self, subscription_id, topic_name):
         """
