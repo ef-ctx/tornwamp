@@ -76,10 +76,10 @@ class ClientConnection(object):
         self.topics.get("subscriber", {}).pop(topic_name, None)
 
     def get_subscriber_topics(self):
-        topics = []
-        for topic_name in self.topics["subscriber"]:
-            topics.append(topic_name)
-        return topics
+        """
+        Return list of topics to which this connection has subscribed.
+        """
+        return list(self.topics["subscriber"])
 
     def add_publishing_channel(self, subscription_id, topic_name):
         """
@@ -96,10 +96,10 @@ class ClientConnection(object):
         self.topics.get("publisher", {}).pop(topic_name, None)
 
     def get_publisher_topics(self):
-        topics = []
-        for topic_name in self.topics["publisher"]:
-            topics.append(topic_name)
-        return topics
+        """
+        Return list of topics to which this connection has subscribed.
+        """
+        return list(self.topics["publisher"])
 
     @property
     def dict(self):

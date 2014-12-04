@@ -25,15 +25,16 @@ lint:
 	@# R0903: Too few public methods (%s/%s)
 	@# R0904: Too many public methods - disabled due to Tornado's classes
 	@# R0913: Too many arguments (%s/%s)
-	@# W0603: Using the global statement
-	@# W0621: Redefining name %r from outer scope (line %s) - due to main if __name__ == '__main__'
+	@# W0106: Expression "%s" is assigned to nothing
 	@# W0142: Used * or ** magic
 	@# W0223: Method %r is abstract in class %r but is not overridden
 	@# W0231: __init__ method from base class %r is not called
 	@# W0511: (warning notes in code comments; message varies)
+	@# W0603: Using the global statement
+	@# W0621: Redefining name %r from outer scope (line %s) - due to main if __name__ == '__main__'
 
 	@echo "Running pylint"
-	@pylint tornwamp --disable=C0301 --disable=E1102 --disable=R0201 --disable=R0902 --disable=R0903 --disable=R0904 --disable=R0913 --disable=C0103 --disable=W0603 --disable=W0621 --disable=W0142 --disable=W0223 --disable=W0231 --disable=W0511
+	@pylint tornwamp --disable=C0301 --disable=E1102 --disable=R0201 --disable=R0902 --disable=R0903 --disable=R0904 --disable=R0913 --disable=C0103 --disable=W0106 --disable=W0142 --disable=W0223 --disable=W0231 --disable=W0511 --disable=W0603 --disable=W0621
 
 tests: clean pep8 pep8_tests
 	@echo "Running pep8, unit and integration tests..."
