@@ -12,6 +12,9 @@ from tornwamp.identifier import create_global_id
 
 
 class Code(IntEnum):
+    """
+    Enum which represents currently supported WAMP messages.
+    """
     HELLO = 1
     WELCOME = 2
     ABORT = 3

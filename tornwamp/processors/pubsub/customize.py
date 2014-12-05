@@ -37,11 +37,13 @@ def add_subscriber(topic, connection):
     return subscription_id
 
 
-def get_subscribe_direct_messages(subscribed_message, subscription_id):
+def get_subscribe_direct_messages(subscribe_message, subscription_id):
     """
     Return a list of dictionaries containing connections and what message they
     should receive. This is called from SubscribeProcessor when it succeeds.
     """
+    assert subscribe_message, "get_subscribe_direct_messages requires subscribe_message"
+    assert subscription_id, "get_subscribe_direct_messages requires subscription_id"
     return []
 
 
@@ -54,8 +56,7 @@ def get_publish_direct_messages(publish_message, publication_id):
     topic_name = publish_message.topic
     topic = tornwamp_topic.topics.get(topic_name)
     if topic:
-        for connection in topic.subscribers:
-            subscription_id = connection.topics['subscriber'][topic_name]
+        for subscription_id, connection in topic.subscribers.items():
             event_message = EventMessage(
                 subscription_id=subscription_id,
                 publication_id=publication_id,
