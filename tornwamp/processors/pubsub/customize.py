@@ -42,6 +42,8 @@ def get_subscribe_direct_messages(subscribe_message, subscription_id):
     Return a list of dictionaries containing connections and what message they
     should receive. This is called from SubscribeProcessor when it succeeds.
     """
+    assert subscribe_message, "get_subscribe_direct_messages requires subscribe_message"
+    assert subscription_id, "get_subscribe_direct_messages requires subscription_id"
     return []
 
 

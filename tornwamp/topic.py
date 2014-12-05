@@ -65,6 +65,11 @@ class TopicsManager(dict):
             topic.subscribers.pop(subscription_id, None)
 
     def get_connection(self, topic_name, subscription_id):
+        """
+        Get topic connection provided topic_name and subscription_id. Try to find
+        it in subscribers, otherwise, fetches from publishers.
+        Return None if it is not available in any.
+        """
         topic = self[topic_name]
         return topic.subscribers.get(subscription_id) or topic.publishers.get(subscription_id)
 
