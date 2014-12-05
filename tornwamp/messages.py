@@ -4,38 +4,39 @@ WAMP messages definitions and serializers.
 Compatible with WAMP Document Revision: RC3, 2014/08/25, available at:
 https://github.com/tavendo/WAMP/blob/master/spec/basic.md
 """
-
 import json
-from tornwamp.identifier import create_global_id
+from copy import deepcopy
+
 from enum import IntEnum
+from tornwamp.identifier import create_global_id
 
 
 class Code(IntEnum):
     HELLO = 1
     WELCOME = 2
     ABORT = 3
-# CHALLENGE = 4
-# AUTHENTICATE = 5
+    # CHALLENGE = 4
+    # AUTHENTICATE = 5
     GOODBYE = 6
-# HEARTBEAT = 7
+    # HEARTBEAT = 7
     ERROR = 8
     PUBLISH = 16
     PUBLISHED = 17
     SUBSCRIBE = 32
     SUBSCRIBED = 33
-# UNSUBSCRIBE = 34
-# UNSUBSCRIBED = 35
+    # UNSUBSCRIBE = 34
+    # UNSUBSCRIBED = 35
     EVENT = 36
     CALL = 48
-# CANCEL = 49
+    # CANCEL = 49
     RESULT = 50
-# REGISTER = 64
-# REGISTERED = 65
-# UNREGISTER = 66
-# UNREGISTERED = 67
-# INVOCATION = 68
-# INTERRUPT = 69
-# YIELD = 70
+    # REGISTER = 64
+    # REGISTERED = 65
+    # UNREGISTER = 66
+    # UNREGISTERED = 67
+    # INVOCATION = 68
+    # INTERRUPT = 69
+    # YIELD = 70
 
 
 class Message(object):
@@ -65,7 +66,7 @@ class Message(object):
         """
         Create a JSON representation of this message.
         """
-        transform = self.value
+        transform = deepcopy(self.value)
         transform[0] = transform[0].value  # it is an object of type Code
         return json.dumps(transform)
 
