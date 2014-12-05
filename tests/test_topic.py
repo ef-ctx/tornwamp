@@ -14,19 +14,19 @@ class TopicTestCase(unittest.TestCase):
     def test_constructor(self):
         topic = Topic("the.monarchy")
         self.assertEqual(topic.name, "the.monarchy")
-        self.assertEqual(topic.subscribers, set())
-        self.assertEqual(topic.publishers, set())
+        self.assertEqual(topic.subscribers, {})
+        self.assertEqual(topic.publishers, {})
 
     def test_dict(self):
         topic = Topic("the.republic")
         subscriber = MockSubscriber()
-        topic.subscribers.add(subscriber)
+        topic.subscribers[123] = subscriber
         expected_dict = {
             'name': 'the.republic',
-            'publishers': [],
-            'subscribers': [
-                {"author": "plato"}
-            ]
+            'publishers': {},
+            'subscribers': {
+                123: {"author": "plato"}
+            }
         }
         self.assertEqual(topic.dict, expected_dict)
 
@@ -38,18 +38,18 @@ class TopicsManagerTestCase(unittest.TestCase):
     def test_add_subscriber(self):
         manager = TopicsManager()
         connection = ClientConnection(None, name="Dracula")
-        manager.add_subscriber("romania", connection)
-        connection = manager["romania"].subscribers.pop()
+        manager.add_subscriber("romania", connection, 432)
+        connection = manager["romania"].subscribers.pop(432)
         self.assertEqual(connection.name, "Dracula")
         self.assertTrue("romania" in connection.topics["subscriber"])
 
     def test_remove_subscriber(self):
         manager = TopicsManager()
         connection = ClientConnection(None, name="Dracula")
-        manager.add_subscriber("romania", connection)
+        manager.add_subscriber("romania", connection, 95)
         self.assertEqual(len(manager["romania"].subscribers), 1)
         self.assertTrue("romania" in connection.topics["subscriber"])
-        manager.remove_subscriber("romania", connection)
+        manager.remove_subscriber("romania", 95)
         self.assertEqual(len(manager["romania"].subscribers), 0)
         self.assertFalse("romania" in connection.topics["subscriber"])
 
@@ -61,18 +61,18 @@ class TopicsManagerTestCase(unittest.TestCase):
     def test_add_publisher(self):
         manager = TopicsManager()
         connection = ClientConnection(None, name="Frankenstein")
-        manager.add_publisher("gernsheim", connection)
-        connection = manager["gernsheim"].publishers.pop()
+        manager.add_publisher("gernsheim", connection, 123)
+        connection = manager["gernsheim"].publishers.pop(123)
         self.assertEqual(connection.name, "Frankenstein")
         self.assertTrue("gernsheim" in connection.topics["publisher"])
 
     def test_remove_publisher(self):
         manager = TopicsManager()
         connection = ClientConnection(None, name="Frankenstein")
-        manager.add_publisher("gernsheim", connection)
+        manager.add_publisher("gernsheim", connection, 123)
         self.assertEqual(len(manager["gernsheim"].publishers), 1)
         self.assertTrue("gernsheim" in connection.topics["publisher"])
-        manager.remove_publisher("gernsheim", connection)
+        manager.remove_publisher("gernsheim", 123)
         self.assertEqual(len(manager["gernsheim"].publishers), 0)
         self.assertFalse("gernsheim" in connection.topics["publisher"])
 
@@ -107,8 +107,8 @@ class TopicsManagerTestCase(unittest.TestCase):
         expected_dict = {
             'scotland': {
                 'name': 'scotland',
-                'publishers': [
-                    {
+                'publishers': {
+                    4: {
                         'id': 2,
                         'last_update': None,
                         'name': 'Dr Jekyll',
@@ -120,9 +120,9 @@ class TopicsManagerTestCase(unittest.TestCase):
                         'zombie': False,
                         'zombification_datetime': None
                     }
-                ],
-                'subscribers': [
-                    {
+                },
+                'subscribers': {
+                    3: {
                         'id': 1,
                         'last_update': None,
                         'name': 'Mr Hyde',
@@ -134,7 +134,7 @@ class TopicsManagerTestCase(unittest.TestCase):
                         'zombie': False,
                         'zombification_datetime': None
                     }
-                ]
+                }
             }
         }
         self.assertEqual(manager.dict, expected_dict)

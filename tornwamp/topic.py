@@ -15,52 +15,58 @@ class TopicsManager(dict):
         Add a connection as a topic's subscriber.
         """
         topic = self.get(topic_name, Topic(topic_name))
-        topic.subscribers.add(connection)
-        self[topic_name] = topic
         subscription_id = subscription_id or create_global_id()
+        topic.subscribers[subscription_id] = connection
+        self[topic_name] = topic
         connection.add_subscription_channel(subscription_id, topic_name)
         return subscription_id
 
-    def remove_subscriber(self, topic_name, connection):
+    def remove_subscriber(self, topic_name, subscription_id):
         """
-        Remove a connection a topic's subscriber
+        Remove a connection a topic's subscriber provided:
+        - topic_name
+        - subscription_id
         """
         topic = self.get(topic_name)
-        if topic and connection in topic.subscribers:
-            topic.subscribers.discard(connection)
+        if topic and subscription_id in topic.subscribers:
+            connection = topic.subscribers.pop(subscription_id)
             connection.remove_subscription_channel(topic_name)
 
-    def add_publisher(self, topic_name, connection):
+    def add_publisher(self, topic_name, connection, subscription_id=None):
         """
         Add a connection as a topic's publisher.
         """
         topic = self.get(topic_name, Topic(topic_name))
-        topic.publishers.add(connection)
+        subscription_id = subscription_id or create_global_id()
+        topic.publishers[subscription_id] = connection
         self[topic_name] = topic
-        subscription_id = create_global_id()
         connection.add_publishing_channel(subscription_id, topic_name)
         return subscription_id
 
-    def remove_publisher(self, topic_name, connection):
+    def remove_publisher(self, topic_name, subscription_id):
         """
         Remove a connection a topic's subscriber
         """
         topic = self.get(topic_name)
-        if topic and connection in topic.publishers:
-            topic.publishers.discard(connection)
+        if topic and subscription_id in topic.publishers:
+            connection = topic.publishers.pop(subscription_id)
             connection.remove_publishing_channel(topic_name)
 
     def remove_connection(self, connection):
         """
         Connection is to be removed, scrap all connection publishers/subscribers in every topic
         """
-        for topic_name in connection.get_publisher_topics():
+        for topic_name, subscription_id in connection.topics["publisher"].items():
             topic = self.get(topic_name)
-            topic.publishers.discard(connection) if topic else None
+            topic.publishers.pop(subscription_id)
 
-        for topic_name in connection.get_subscriber_topics():
+        for topic_name, subscription_id in connection.topics["subscriber"].items():
             topic = self.get(topic_name)
-            topic.subscribers.discard(connection) if topic else None
+            topic.subscribers.pop(subscription_id, None)
+
+    def get_connection(self, topic_name, subscription_id):
+        topic = self[topic_name]
+        return topic.subscribers.get(subscription_id) or topic.publishers.get(subscription_id)
 
     @property
     def dict(self):
@@ -79,16 +85,23 @@ class Topic(object):
     """
     def __init__(self, name):
         self.name = name
-        self.subscribers = set()
-        self.publishers = set()
+        self.subscribers = {}
+        self.publishers = {}
+
+    @property
+    def connections(self):
+        """
+        Return a set of topic connections - no matter if they are subscribers or publishers.
+        """
+        return dict(self.subscribers, **self.publishers)
 
     @property
     def dict(self):
         """
         Return a dict that is jsonifiable.
         """
-        subscribers = [c.dict for c in self.subscribers]
-        publishers = [c.dict for c in self.publishers]
+        subscribers = {subscription_id: conn.dict for subscription_id, conn in self.subscribers.items()}
+        publishers = {subscription_id: conn.dict for subscription_id, conn in self.publishers.items()}
         data = {
             "name": self.name,
             "subscribers": subscribers,
