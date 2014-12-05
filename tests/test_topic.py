@@ -30,6 +30,13 @@ class TopicTestCase(unittest.TestCase):
         }
         self.assertEqual(topic.dict, expected_dict)
 
+    def test_connections(self):
+        topic = Topic("start.trek")
+        topic.subscribers = {1: 2}
+        topic.publishers = {3: 4}
+        expected = {1: 2, 3: 4}
+        self.assertEqual(topic.connections, expected)
+
 
 class TopicsManagerTestCase(unittest.TestCase):
 
@@ -138,3 +145,14 @@ class TopicsManagerTestCase(unittest.TestCase):
             }
         }
         self.assertEqual(manager.dict, expected_dict)
+
+    def test_get_connection(self):
+        manager = TopicsManager()
+        frodo = ClientConnection(None, name="Frodo")
+        sam = ClientConnection(None, name="Sam")
+        manager.add_subscriber("lord.of.the.rings", frodo, subscription_id=1)
+        manager.add_publisher("lord.of.the.rings", sam, subscription_id=2)
+        hopefully_frodo = manager.get_connection("lord.of.the.rings", 1)
+        hopefully_sam = manager.get_connection("lord.of.the.rings", 2)
+        self.assertEqual(frodo, hopefully_frodo)
+        self.assertEqual(sam, hopefully_sam)
