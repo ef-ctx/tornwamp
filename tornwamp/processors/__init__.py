@@ -62,7 +62,7 @@ class UnhandledProcessor(Processor):
 
     def process(self):
         message = Message(*self.message.value)
-        description = "Unsupported message {0}".format(message.value)
+        description = "Unsupported message {0}".format(self.message.value)
         out_message = ErrorMessage(
             request_code=message.code,
             request_id=message.id,
