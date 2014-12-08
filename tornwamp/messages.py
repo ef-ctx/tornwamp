@@ -69,9 +69,12 @@ class Message(object):
         """
         Create a JSON representation of this message.
         """
-        transform = deepcopy(self.value)
-        transform[0] = transform[0].value  # it is an object of type Code
-        return json.dumps(transform)
+        message_value = deepcopy(self.value)
+        # TODO: test
+        for index, item in enumerate(message_value):
+            if isinstance(item, Code):
+                message_value[index] = item.value
+        return json.dumps(message_value)
 
     def error(self, text, info=None):
         """
