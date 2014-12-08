@@ -47,7 +47,7 @@ def get_subscribe_direct_messages(subscribe_message, subscription_id):
     return []
 
 
-def get_publish_direct_messages(publish_message, publication_id):
+def get_publish_direct_messages(publish_message, publication_id, publisher_connection):
     """
     Return a list of dictionaries containing connections and what message they
     should receive. This is called from PublishProcessor when it succeeds.
@@ -57,15 +57,16 @@ def get_publish_direct_messages(publish_message, publication_id):
     topic = tornwamp_topic.topics.get(topic_name)
     if topic:
         for subscription_id, connection in topic.subscribers.items():
-            event_message = EventMessage(
-                subscription_id=subscription_id,
-                publication_id=publication_id,
-                args=publish_message.args,
-                kwargs=publish_message.kwargs,
-            )
-            item = {
-                "connection": connection,
-                "message": event_message
-            }
-            data.append(item)
+            if connection != publisher_connection:
+                event_message = EventMessage(
+                    subscription_id=subscription_id,
+                    publication_id=publication_id,
+                    args=publish_message.args,
+                    kwargs=publish_message.kwargs,
+                )
+                item = {
+                    "connection": connection._websocket,
+                    "message": event_message
+                }
+                data.append(item)
     return data
