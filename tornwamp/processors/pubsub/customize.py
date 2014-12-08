@@ -39,8 +39,16 @@ def add_subscriber(topic, connection):
 
 def get_subscribe_direct_messages(subscribe_message, subscription_id):
     """
-    Return a list of dictionaries containing connections and what message they
+    Return a list of dictionaries containing websocket and what message they
     should receive. This is called from SubscribeProcessor when it succeeds.
+
+    Sample response:
+    [
+        {
+            "websocket": <tornwamp.WAMPHandler>,
+            "message": <tornwamp.messages.Event>
+        }
+    ]
     """
     assert subscribe_message, "get_subscribe_direct_messages requires subscribe_message"
     assert subscription_id, "get_subscribe_direct_messages requires subscription_id"
@@ -49,8 +57,15 @@ def get_subscribe_direct_messages(subscribe_message, subscription_id):
 
 def get_publish_direct_messages(publish_message, publication_id, publisher_connection):
     """
-    Return a list of dictionaries containing connections and what message they
+    Return a list of dictionaries containing websocket and what message they
     should receive. This is called from PublishProcessor when it succeeds.
+
+    Sample response:
+    [
+        {
+            "websocket": <tornwamp.WAMPHandler>,
+            "message": <tornwamp.messages.Event>
+        }
     """
     data = []
     topic_name = publish_message.topic
@@ -65,7 +80,7 @@ def get_publish_direct_messages(publish_message, publication_id, publisher_conne
                     kwargs=publish_message.kwargs,
                 )
                 item = {
-                    "connection": connection._websocket,
+                    "websocket": connection._websocket,
                     "message": event_message
                 }
                 data.append(item)

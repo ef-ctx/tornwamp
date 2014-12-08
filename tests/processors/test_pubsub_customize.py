@@ -25,7 +25,7 @@ class CustomizeTestCase(unittest.TestCase):
         items = customize.get_publish_direct_messages(msg, pub_id, other_connection)
         self.assertEqual(len(items), 1)
         message = items[0]["message"]
-        self.assertEqual(items[0]["connection"], None)
+        self.assertEqual(items[0]["websocket"], None)
         self.assertEqual(message.code, Code.EVENT)
         self.assertEqual(message.subscription_id, 18273)
         self.assertEqual(message.publication_id, 91537)
