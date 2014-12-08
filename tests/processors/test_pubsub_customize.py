@@ -21,11 +21,11 @@ class CustomizeTestCase(unittest.TestCase):
     def test_get_publish_direct_messages(self):
         msg = PublishMessage(request_id=168206, topic="education.first", kwargs={"type": "someMessage"})
         pub_id = 91537
-        items = customize.get_publish_direct_messages(msg, pub_id)
+        other_connection = ClientConnection(None, user_id=123)
+        items = customize.get_publish_direct_messages(msg, pub_id, other_connection)
         self.assertEqual(len(items), 1)
-        user_id = items[0]["connection"].user_id
         message = items[0]["message"]
-        self.assertEqual(user_id, 7471)
+        self.assertEqual(items[0]["connection"], None)
         self.assertEqual(message.code, Code.EVENT)
         self.assertEqual(message.subscription_id, 18273)
         self.assertEqual(message.publication_id, 91537)
