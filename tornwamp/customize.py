@@ -8,7 +8,8 @@ processors = {
     Code.HELLO: HelloProcessor,
     Code.GOODBYE: GoodbyeProcessor,
     Code.SUBSCRIBE: pubsub.SubscribeProcessor,
-    Code.CALL: rpc.CallProcessor
+    Code.CALL: rpc.CallProcessor,
+    Code.PUBLISH: pubsub.PublishProcessor
 }
 #    2: 'welcome',
 #    3: 'abort',
@@ -16,9 +17,7 @@ processors = {
 #    5: 'authenticate',
 #    7: 'heartbeat',
 #    8: 'error',
-#    16: 'publish',
 #    17: 'published',
-#    32: 'subscribe',
 #    33: 'subscribed',
 #    34: 'unsubscribe',
 #    35: 'unsubscribed',

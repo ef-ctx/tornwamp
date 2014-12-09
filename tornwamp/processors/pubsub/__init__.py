@@ -50,7 +50,11 @@ class PublishProcessor(Processor):
                 request_id=received_message.request_id,
                 publication_id=publication_id
             )
-            self.direct_messages = customize.get_publish_direct_messages(received_message, publication_id)
+            self.direct_messages = customize.get_publish_direct_messages(
+                received_message,
+                publication_id,
+                self.connection
+            )
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
