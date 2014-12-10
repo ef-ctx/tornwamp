@@ -21,6 +21,15 @@ def abort(handler, error_msg, details, reason='tornwamp.error.unauthorized'):
     handler.close(1, error_msg)
 
 
+def deliver_messages(items):
+    """
+    Receives a dictionary with {websocket, message} and writes the message into the websocket
+    """
+    for item in items:
+        recipient = item["websocket"]
+        recipient.write_message(item["message"].json)
+
+
 class WAMPHandler(WebSocketHandler):
     """
     WAMP WebSocket Handler.
@@ -88,6 +97,8 @@ class WAMPHandler(WebSocketHandler):
         for item in processor.direct_messages:
             recipient = item["websocket"]
             recipient.write_message(item["message"].json)
+
+        deliver_messages(processor.direct_messages)
 
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)
