@@ -81,12 +81,6 @@ class ClientConnection(object):
         """
         self.topics.get("subscriber", {}).pop(topic_name, None)
 
-    def get_subscriber_topics(self):
-        """
-        Return list of topics to which this connection has subscribed.
-        """
-        return list(self.topics["subscriber"])
-
     def add_publishing_channel(self, subscription_id, topic_name):
         """
         Add topic as a publisher.
