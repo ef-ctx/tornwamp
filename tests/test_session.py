@@ -78,6 +78,14 @@ class ClientConnectionTestCase(unittest.TestCase):
         topics = connection.get_publisher_topics()
         self.assertEqual(sorted(topics), expected_topics)
 
+    def test_get_topics(self):
+        connection = ClientConnection(websocket=None)
+        connection.add_subscription_channel(12, "whiplash")
+        connection.add_publishing_channel(21, "reload")
+        topics = connection.get_topics()
+        expected_topics = {'reload': 21, 'whiplash': 12}
+        self.assertEqual(topics, expected_topics)
+
 
 class ConnectionDicttestCase(unittest.TestCase):
 

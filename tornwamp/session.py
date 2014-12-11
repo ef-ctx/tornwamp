@@ -91,7 +91,7 @@ class ClientConnection(object):
 
     def remove_publishing_channel(self, topic_name):
         """
-       Rmove topic as a publisher.
+        Remove topic as a publisher.
         """
         self.topics.get("publisher", {}).pop(topic_name, None)
 
@@ -100,6 +100,13 @@ class ClientConnection(object):
         Return list of topics to which this connection has subscribed.
         """
         return list(self.topics["publisher"])
+
+    def get_topics(self):
+        """
+        Return a dictionary containing subscriptions_ids and connections - no
+        matter if they are subscribers or publishers.
+        """
+        return dict(self.topics["subscriber"], **self.topics["publisher"])
 
     @property
     def dict(self):
