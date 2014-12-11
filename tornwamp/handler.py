@@ -96,8 +96,6 @@ class WAMPHandler(WebSocketHandler):
 
         deliver_messages(processor.direct_messages)
 
-        deliver_messages(processor.direct_messages)
-
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)
 
