@@ -70,19 +70,9 @@ class ClientConnection(object):
         """
         Return connection's subscription_id for a specific topic.
         """
-        return self.get_subscription_id_for_subscriber(topic_name)
-
-    def get_subscription_id_for_subscriber(self, topic_name):
-        """
-        Returns a subscription_id for a given subscribed topic
-        """
-        return self.topics['subscriber'].get(topic_name)
-
-    def get_subscription_id_for_publisher(self, topic_name):
-        """
-        Returns a subscription_id for a given published (?) topic
-        """
-        return self.topics['publisher'].get(topic_name)
+        subscribe_subscription = self.topics['subscriber'].get(topic_name)
+        publish_subscription = self.topics['publisher'].get(topic_name)
+        return subscribe_subscription or publish_subscription
 
     def add_subscription_channel(self, subscription_id, topic_name):
         """
