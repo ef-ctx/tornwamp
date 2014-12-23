@@ -120,6 +120,7 @@ class TopicsManagerTestCase(unittest.TestCase):
                         'last_update': None,
                         'name': 'Dr Jekyll',
                         'topics': {
+                            'subscriber': {},
                             'publisher': {
                                 'scotland': 4
                             }
@@ -136,7 +137,8 @@ class TopicsManagerTestCase(unittest.TestCase):
                         'topics': {
                             'subscriber': {
                                 'scotland': 3
-                            }
+                            },
+                            'publisher': {}
                         },
                         'zombie': False,
                         'zombification_datetime': None

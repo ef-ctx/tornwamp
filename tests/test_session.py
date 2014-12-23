@@ -18,7 +18,7 @@ class ClientConnectionTestCase(unittest.TestCase):
             "user_name": "Alex",
             "speaks_chinese": True,
             "id": 1111,
-            "topics": {},
+            "topics": {'subscriber': {}, 'publisher': {}},
             "zombie": False,
             'zombification_datetime': None,
             "last_update": '1984-05-11T00:00:00'
@@ -41,7 +41,8 @@ class ClientConnectionTestCase(unittest.TestCase):
         expected_topics = {
             "subscriber": {
                 "start.wars": 7
-            }
+            },
+            'publisher': {}
         }
         self.assertEqual(connection.topics, expected_topics)
 
@@ -66,7 +67,8 @@ class ClientConnectionTestCase(unittest.TestCase):
         expected_topics = {
             "publisher": {
                 "reason.for.life": 42
-            }
+            },
+            'subscriber': {}
         }
         self.assertEqual(connection.topics, expected_topics)
 
@@ -99,7 +101,7 @@ class ConnectionDicttestCase(unittest.TestCase):
             2222: {
                 "include": 1,
                 "id": 2222,
-                "topics": {},
+                "topics": {'subscriber': {}, 'publisher': {}},
                 "zombie": False,
                 'zombification_datetime': None,
                 "last_update": '1950-04-06T00:00:00'

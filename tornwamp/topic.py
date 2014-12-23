@@ -58,7 +58,7 @@ class TopicsManager(dict):
         """
         for topic_name, subscription_id in connection.topics["publisher"].items():
             topic = self.get(topic_name)
-            topic.publishers.pop(subscription_id)
+            topic.publishers.pop(subscription_id, None)
 
         for topic_name, subscription_id in connection.topics["subscriber"].items():
             topic = self.get(topic_name)
