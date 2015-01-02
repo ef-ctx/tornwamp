@@ -27,8 +27,8 @@ class Code(IntEnum):
     PUBLISHED = 17
     SUBSCRIBE = 32
     SUBSCRIBED = 33
-    # UNSUBSCRIBE = 34
-    # UNSUBSCRIBED = 35
+    UNSUBSCRIBE = 34
+    UNSUBSCRIBED = 35
     EVENT = 36
     CALL = 48
     # CANCEL = 49
@@ -362,3 +362,29 @@ class EventMessage(Message):
         self.kwargs = kwargs or {}
         self.value = [self.code, self.subscription_id, self.publication_id, self.details]
         self._update_args_and_kargs()
+
+
+class UnsubscribeMessage(Message):
+    """
+    Unsubscribe request sent by a Subscriber to a Broker to unsubscribe a subscription.
+    [UNSUBSCRIBE, Request|id, SUBSCRIBED.Subscription|id]
+    """
+    def __init__(self, code=Code.UNSUBSCRIBE, request_id=None, subscription_id=None):
+        assert not request_id is None, "UnsubscribeMessage must have request_id"
+        assert not subscription_id is None, "UnsubscribeMessage must have subscription_id"
+        self.code = code
+        self.request_id = request_id
+        self.subscription_id = subscription_id
+        self.value = [self.code, self.request_id, self.subscription_id]
+
+
+class UnsubscribedMessage(Message):
+    """
+    Acknowledge sent by a Broker to a Subscriber to acknowledge unsubscription.
+    [UNSUBSCRIBED, UNSUBSCRIBE.Request|id]
+    """
+    def __init__(self, code=Code.UNSUBSCRIBED, request_id=None):
+        assert not request_id is None, "UnsubscribedMessage must have request_id"
+        self.code = code
+        self.request_id = request_id
+        self.value = [self.code, self.request_id]

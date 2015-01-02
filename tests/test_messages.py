@@ -113,3 +113,18 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(result_message.kwargs, {})
         expected = [50, 8259, {}]
         self.assertEqual(result_message.value, expected)
+
+    def test_unsubscribe_message(self):
+        unsubscribe_message = wamp.UnsubscribeMessage(request_id=1409, subscription_id=2)
+        self.assertEqual(unsubscribe_message.code, Code.UNSUBSCRIBE)
+        self.assertEqual(unsubscribe_message.request_id, 1409)
+        self.assertEqual(unsubscribe_message.subscription_id, 2)
+        expected = [34, 1409, 2]
+        self.assertEqual(unsubscribe_message.value, expected)
+
+    def test_unsubscribed_message(self):
+        unsubscribed_message = wamp.UnsubscribedMessage(request_id=723)
+        self.assertEqual(unsubscribed_message.code, Code.UNSUBSCRIBED)
+        self.assertEqual(unsubscribed_message.request_id, 723)
+        expected = [35, 723]
+        self.assertEqual(unsubscribed_message.value, expected)
