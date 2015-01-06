@@ -112,6 +112,10 @@ class ClientConnection(object):
         return dict(self.topics["subscriber"], **self.topics["publisher"])
 
     @property
+    def topics_by_subscription_id(self):
+        return {subscription_id: topic for topic, subscription_id in self.get_topics().items()}
+
+    @property
     def dict(self):
         """
         Return dict representation of the current Connection, keeping only data
