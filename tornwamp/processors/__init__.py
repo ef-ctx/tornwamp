@@ -50,7 +50,7 @@ class Processor(object):
         - group_messages
 
         - must_close
-        - close_code
+        - close_code (1000 or in the range 3000 to 4999)
         - close_message
         """
 
@@ -93,5 +93,11 @@ class GoodbyeProcessor(Processor):
     def process(self):
         self.answer_message = GoodbyeMessage(*self.message.value)
         self.must_close = True
-        self.close_code = 2
+        # Excerpt from RFC6455 (The WebSocket Protocol)
+        # "Endpoints MAY: use the following pre-defined status codes when sending
+        # a Close frame:
+        #   1000 indicates a normal closure, meaning that the purpose for
+        #   which the connection was established has been fulfilled."
+        # http://tools.ietf.org/html/rfc6455#section-7.4
+        self.close_code = 1000
         self.close_reason = self.answer_message.details.get('message', '')

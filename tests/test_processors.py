@@ -45,5 +45,5 @@ class ProcessorTestCase(unittest.TestCase):
         self.assertEqual(response.details, {"message": "adios"})
         self.assertEqual(response.reason, "i.dont.like.you")
         self.assertTrue(processor.must_close)
-        self.assertEqual(processor.close_code, 2)
+        self.assertEqual(processor.close_code, 1000)
         self.assertEqual(processor.close_reason, "adios")
