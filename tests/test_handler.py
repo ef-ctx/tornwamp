@@ -109,7 +109,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
 
         msg = yield ws.read_message()
         self.assertIs(msg, None)
-        self.assertEqual(ws.close_code, 2)
+        self.assertEqual(ws.close_code, 1000)
         self.assertEqual(ws.close_reason, "Closing for test purposes")
 
     @gen_test
