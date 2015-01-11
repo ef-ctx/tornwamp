@@ -56,11 +56,11 @@ class TopicsManager(dict):
         """
         Connection is to be removed, scrap all connection publishers/subscribers in every topic
         """
-        for topic_name, subscription_id in connection.topics["publisher"].items():
+        for topic_name, subscription_id in connection.topics.get("publisher", {}).items():
             topic = self.get(topic_name)
             topic.publishers.pop(subscription_id, None)
 
-        for topic_name, subscription_id in connection.topics["subscriber"].items():
+        for topic_name, subscription_id in connection.topics.get("subscriber", {}).items():
             topic = self.get(topic_name)
             topic.subscribers.pop(subscription_id, None)
 
