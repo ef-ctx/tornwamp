@@ -3,6 +3,7 @@ Abstract websocket connections (dual channel between clients and server).
 """
 from datetime import datetime
 
+from tornwamp import topic
 from tornwamp.identifier import create_global_id
 
 
@@ -65,6 +66,17 @@ class ClientConnection(object):
         # when connection should be closed but something is left
         self.zombie = False
         self.zombification_datetime = None
+
+    @property
+    def peer(self):
+        try:
+            ip, port = self._websocket.ws_connection.stream.socket.getpeername()
+        except AttributeError:
+            ip = self._websocket.request.remote_ip
+            name = u"{0}:HACK|{1}".format(ip, self.id)
+        else:
+            name = u"{0}:{1}|{2}".format(ip, port, self.id)
+        return name
 
     def get_subscription_id(self, topic_name):
         """
@@ -138,6 +150,5 @@ class ClientConnection(object):
         topics and can't receive messages from other clients.
         """
         self.zombification_datetime = datetime.now().isoformat()
-        self.topics = []
         self.zombie = True
-#        TopicsManager.remove_connection_from_all_topics(self)
+        topic.topics.remove_connection(self)

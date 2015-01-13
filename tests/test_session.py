@@ -32,7 +32,7 @@ class ClientConnectionTestCase(unittest.TestCase):
         self.assertFalse(connection.zombie)
         connection.zombify()
         self.assertEqual(connection.zombification_datetime, '2002-04-04T00:00:00')
-        self.assertEqual(connection.topics, [])
+        self.assertEqual(connection.topics, {'subscriber': {}, 'publisher': {}})
         self.assertTrue(connection.zombie)
 
     def test_add_subscription_channel(self):
