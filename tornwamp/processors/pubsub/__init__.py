@@ -44,17 +44,19 @@ class PublishProcessor(Processor):
         """
         received_message = PublishMessage(*self.message.value)
         allow, msg = customize.authorize_publication(received_message.topic, self.connection)
+        answer = None
         if allow:
-            publication_id = create_global_id()
-            answer = PublishedMessage(
-                request_id=received_message.request_id,
-                publication_id=publication_id
-            )
-            self.direct_messages = customize.get_publish_direct_messages(
-                received_message,
-                publication_id,
-                self.connection
-            )
+            if received_message.options.get("acknowledge"):
+                publication_id = create_global_id()
+                answer = PublishedMessage(
+                    request_id=received_message.request_id,
+                    publication_id=publication_id
+                )
+                self.direct_messages = customize.get_publish_direct_messages(
+                    received_message,
+                    publication_id,
+                    self.connection
+                )
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
@@ -62,4 +64,5 @@ class PublishProcessor(Processor):
                 uri="tornwamp.publish.unauthorized"
             )
             answer.error(msg)
-        self.answer_message = answer
+        if answer:
+            self.answer_message = answer

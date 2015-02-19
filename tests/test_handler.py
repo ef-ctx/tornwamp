@@ -121,7 +121,8 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         request = self.build_request()
         ws = yield websocket_connect(request)
 
-        msg = messages.PublishMessage(request_id=1, topic="interstellar", kwargs={"review": "Mind blowing"})
+        options = {"acknowledge": True}
+        msg = messages.PublishMessage(request_id=1, topic="interstellar", kwargs={"review": "Mind blowing"}, options=options)
         ws.write_message(msg.json)
 
         text = yield ws.read_message()

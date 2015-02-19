@@ -30,8 +30,16 @@ class SubscribeProcessorTestCase(unittest.TestCase):
 
 class PublishProcessorTestCase(unittest.TestCase):
 
-    def test_succeed(self):
+    def test_succeed_without_acknowledge(self):
         message = PublishMessage(request_id=345, topic="world.cup")
+        connection = ClientConnection(None)
+        processor = PublishProcessor(message, connection)
+        answer = processor.answer_message
+        self.assertEqual(answer, None)
+
+    def test_succeed_with_acknowledge(self):
+        options = {"acknowledge": True}
+        message = PublishMessage(request_id=345, topic="world.cup", options=options)
         connection = ClientConnection(None)
         processor = PublishProcessor(message, connection)
         answer = processor.answer_message
