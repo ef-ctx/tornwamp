@@ -18,6 +18,8 @@ class SubscribeProcessor(Processor):
         received_message = SubscribeMessage(*self.message.value)
         allow, msg = customize.authorize_subscription(received_message.topic, self.connection)
         if allow:
+#            if received_message.topic == "announcements":
+#                import pdb; pdb.set_trace()
             subscription_id = customize.add_subscriber(received_message.topic, self.connection)
             answer = SubscribedMessage(
                 request_id=received_message.request_id,
@@ -46,17 +48,17 @@ class PublishProcessor(Processor):
         allow, msg = customize.authorize_publication(received_message.topic, self.connection)
         answer = None
         if allow:
+            publication_id = create_global_id()
             if received_message.options.get("acknowledge"):
-                publication_id = create_global_id()
                 answer = PublishedMessage(
                     request_id=received_message.request_id,
                     publication_id=publication_id
                 )
-                self.direct_messages = customize.get_publish_direct_messages(
-                    received_message,
-                    publication_id,
-                    self.connection
-                )
+            self.direct_messages = customize.get_publish_direct_messages(
+                received_message,
+                publication_id,
+                self.connection
+            )
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
@@ -64,5 +66,4 @@ class PublishProcessor(Processor):
                 uri="tornwamp.publish.unauthorized"
             )
             answer.error(msg)
-        if answer:
-            self.answer_message = answer
+        self.answer_message = answer
