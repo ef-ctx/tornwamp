@@ -388,3 +388,56 @@ class UnsubscribedMessage(Message):
         self.code = code
         self.request_id = request_id
         self.value = [self.code, self.request_id]
+
+
+CODE_TO_CLASS = {
+    Code.HELLO: HelloMessage,
+    Code.WELCOME: WelcomeMessage,
+    Code.ABORT: AbortMessage,
+    # CHALLENGE = 4
+    # AUTHENTICATE = 5
+    Code.GOODBYE: GoodbyeMessage,
+    # HEARTBEAT = 7
+    Code.ERROR: ErrorMessage,
+    Code.PUBLISH: PublishMessage,
+    Code.PUBLISHED: PublishedMessage,
+    Code.SUBSCRIBE: SubscribeMessage,
+    Code.SUBSCRIBED: SubscribedMessage,
+    Code.UNSUBSCRIBE: UnsubscribeMessage,
+    Code.UNSUBSCRIBED: UnsubscribedMessage,
+    Code.EVENT: EventMessage,
+    Code.CALL: CallMessage,
+    # CANCEL = 49
+    Code.RESULT: ResultMessage
+    # REGISTER = 64
+    # REGISTERED = 65
+    # UNREGISTER = 66
+    # UNREGISTERED = 67
+    # INVOCATION = 68
+    # INTERRUPT = 69
+    # YIELD = 70
+}
+
+ERROR_PRONE_CODES = [Code.CALL, Code.SUBSCRIBE, Code.UNSUBSCRIBE, Code.PUBLISH]
+
+
+def build_error_message(in_message, uri, description):
+    """
+    Return ErrorMessage instance (*) provided:
+    - incoming message which generated error
+    - error uri
+    - error description
+
+    (*) If incoming message is not prone to ERROR message reponse, return None.
+    """
+    msg = Message.from_text(in_message)
+    if msg.code in ERROR_PRONE_CODES:
+        MsgClass = CODE_TO_CLASS[msg.code]
+        msg = MsgClass.from_text(in_message)
+        answer = ErrorMessage(
+            request_code=msg.code,
+            request_id=msg.request_id,
+            uri=uri
+        )
+        answer.error(description)
+        return answer.json
