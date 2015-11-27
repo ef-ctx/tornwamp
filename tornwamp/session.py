@@ -75,6 +75,9 @@ class ClientConnection(object):
             ip = self._websocket.request.remote_ip
             name = u"{0}:HACK|{1}".format(ip, self.id)
         else:
+            forwarded_ip = self._websocket.request.headers.get("X-Forwarded-For")
+            if forwarded_ip:
+                ip = forwarded_ip
             name = u"{0}:{1}|{2}".format(ip, port, self.id)
         return name
 

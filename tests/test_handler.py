@@ -5,7 +5,7 @@ from tornado.testing import AsyncHTTPTestCase, gen_test
 from tornado.web import Application
 from tornado.websocket import websocket_connect
 
-from tornwamp import messages, topic
+from tornwamp import messages, session, topic
 from tornwamp.handler import WAMPHandler, deliver_messages
 from tornwamp.processors.pubsub import customize as pubsub_customize
 
@@ -38,6 +38,10 @@ class UnauthorizeWAMPHandler(WAMPHandler):
 
 class WAMPHandlerTestCase(AsyncHTTPTestCase):
 
+    def setUp(self):
+        session.connections = {}
+        super(WAMPHandlerTestCase, self).setUp()
+
     def get_app(self):
         application = Application([
             (r"/ws", WAMPHandler),
@@ -56,9 +60,11 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         deliver_messages(items)
         self.assertEqual(websocket.message, "mocked message")
 
-    def build_request(self, path="ws", **headers):
+    def build_request(self, path="ws", headers=None):
         port = self.get_http_port()
         url = 'ws://0.0.0.0:{0}/{1}'.format(port, path)
+        if not headers:
+            headers = {}
         if not 'Origin' in headers:
             headers['Origin'] = 'http://0.0.0.0:%d' % port
         headers['Sec-WebSocket-Protocol'] = 'wamp.2.json'
@@ -70,6 +76,22 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         ws = yield websocket_connect(request)
         msg = messages.HelloMessage(realm="burger.friday")
         ws.write_message(msg.json)
+
+        response = yield ws.read_message()
+        message = messages.Message.from_text(response)
+        self.assertIs(message.code, messages.Code.WELCOME)
+        self.assertFalse(getattr(ws, "close_code", False))
+        ws.close()
+
+    @gen_test
+    def test_connection_with_xforwardedfor(self):
+        request = self.build_request(headers={"X-Forwarded-For": "10.0.0.1"})
+        ws = yield websocket_connect(request)
+        msg = messages.HelloMessage(realm="burger.thursday")
+        ws.write_message(msg.json)
+
+        connection_ip = session.connections.values()[0]
+        self.assertTrue(connection_ip.peer.startswith("10.0.0.1"))
 
         response = yield ws.read_message()
         message = messages.Message.from_text(response)
