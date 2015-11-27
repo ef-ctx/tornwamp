@@ -8,7 +8,7 @@ setup(name="tornwamp",
       author="Tatiana Al-Chueyr Martins",
       author_email="tatiana.alchueyr@gmail.com",
       classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
@@ -22,5 +22,5 @@ setup(name="tornwamp",
       packages=find_packages(),
       tests_require=["coverage==3.6", "nose==1.2.1", "pep8==1.4.1", "mock==1.0.1", "pylint==1.0.0"],
       url = "http://github.com/ef-ctx/tornwamp",
-      version="0.0.1"
+      version="1.0.0"
 )
