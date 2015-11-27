@@ -1,2 +1,2 @@
-git+https://git@github.com/tornadoweb/tornado.git@branch4.0
+tornado==4.3
 enum34
