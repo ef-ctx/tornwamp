@@ -65,7 +65,7 @@ class WAMPHandler(WebSocketHandler):
         """
         Remove connection from connection's manager.
         """
-        return session.connections.pop(self.connection.id) if self.connection else None
+        return session.connections.pop(self.connection.id, None) if self.connection else None
 
     def open(self):
         """
