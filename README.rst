@@ -1,7 +1,22 @@
+.. image:: https://travis-ci.org/ef-ctx/tornwamp.svg?branch=master
+    :target: https://travis-ci.org/ef-ctx/tornwamp
+
+.. image:: https://coveralls.io/repos/github/ef-ctx/tornwamp/badge.svg?branch=master
+    :target: https://coveralls.io/github/ef-ctx/tornwamp?branch=master 
+
+.. image:: https://img.shields.io/pypi/v/tornwamp.svg
+    :target: https://pypi.python.org/pypi/tornwamp/
+
+.. image:: https://img.shields.io/pypi/pyversions/tornwamp.svg
+    :target: https://pypi.python.org/pypi/tornwamp/
+
+.. image:: https://img.shields.io/pypi/dm/tornwamp.svg
+    :target: https://pypi.python.org/pypi/tornwamp/
+
 TornWAMP
 ========
 
-This Python module implements parts of `WAMP <http://wamp.ws/>`_
+This Python module implements parts of `WAMP <http:/git/wamp.ws/>`_
 (Web Application Messaging Protocol).
 
 TornWAMP provides means of having an API which interacts with WAMP-clients

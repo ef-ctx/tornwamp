@@ -38,4 +38,4 @@ lint:
 
 tests: clean pep8 pep8_tests
 	@echo "Running pep8, unit and integration tests..."
-	@nosetests -s  --cover-branches --cover-erase --with-coverage --cover-inclusive --cover-package=tornwamp --tests=tests --with-xunit
+	@tox

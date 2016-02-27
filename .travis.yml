@@ -1,0 +1,12 @@
+service_name: travis-pro
+language: python
+python:
+  - 2.7
+  - 3.5
+install:
+  - pip install -r requirements.txt
+  - pip install -r requirements_test.txt
+script:
+  nosetests -s  --cover-branches --cover-erase --with-coverage --cover-inclusive --cover-package=tornwamp --tests=tests --with-xunit
+after_success:
+  coveralls
