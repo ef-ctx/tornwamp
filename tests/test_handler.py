@@ -65,7 +65,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         url = 'ws://0.0.0.0:{0}/{1}'.format(port, path)
         if not headers:
             headers = {}
-        if not 'Origin' in headers:
+        if 'Origin' not in headers:
             headers['Origin'] = 'http://0.0.0.0:%d' % port
         headers['Sec-WebSocket-Protocol'] = 'wamp.2.json'
         return HTTPRequest(url, headers=headers)
@@ -90,7 +90,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         msg = messages.HelloMessage(realm="burger.thursday")
         ws.write_message(msg.json)
 
-        connection_ip = session.connections.values()[0]
+        connection_ip = list(session.connections.values())[0]
         self.assertTrue(connection_ip.peer.startswith("10.0.0.1"))
 
         response = yield ws.read_message()

@@ -1,6 +1,6 @@
 import unittest
-
 from mock import patch
+
 from tornwamp.messages import Code, PublishMessage, SubscribeMessage
 from tornwamp.processors.pubsub import PublishProcessor, SubscribeProcessor
 from tornwamp.session import ClientConnection

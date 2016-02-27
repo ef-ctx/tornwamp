@@ -4,10 +4,11 @@ feedback to the server on what should be done (e.g. send answer message order
 close connection).
 """
 import abc
+import six
 from tornwamp.messages import Message, ErrorMessage, GoodbyeMessage, HelloMessage, WelcomeMessage
 
 
-class Processor(object):
+class Processor(six.with_metaclass(abc.ABCMeta)):
     """
     Abstract class which defines the base behavior for processing messages
     sent to the Websocket.

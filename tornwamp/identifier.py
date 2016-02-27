@@ -21,7 +21,7 @@ and 2^53 (9007199254740992):
 IDs in the global scope MUST be drawn randomly from a uniform distribution over
 the complete range [0, 2^53]
 
-IDs in the router scope can be chosen freely by the specific router
+IDs in the router fscope can be chosen freely by the specific router
 implementation
 
 IDs in the session scope SHOULD be incremented by 1 beginning with 1 (for each
@@ -47,9 +47,9 @@ def create_global_id():
     over the complete range [0, 2^53]"
     """
     new_id = None
-    while not new_id in existing_ids:
+    while new_id not in existing_ids:
         candidate_id = random.randint(MIN_ID, MAX_ID)
-        if not candidate_id in existing_ids:
+        if candidate_id not in existing_ids:
             new_id = candidate_id
             existing_ids.append(new_id)
     return new_id

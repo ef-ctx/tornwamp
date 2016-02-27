@@ -18,8 +18,6 @@ class SubscribeProcessor(Processor):
         received_message = SubscribeMessage(*self.message.value)
         allow, msg = customize.authorize_subscription(received_message.topic, self.connection)
         if allow:
-#            if received_message.topic == "announcements":
-#                import pdb; pdb.set_trace()
             subscription_id = customize.add_subscriber(received_message.topic, self.connection)
             answer = SubscribedMessage(
                 request_id=received_message.request_id,

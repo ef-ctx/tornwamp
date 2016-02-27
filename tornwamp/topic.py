@@ -98,7 +98,19 @@ class Topic(object):
         """
         Return a set of topic connections - no matter if they are subscribers or publishers.
         """
-        return dict(self.subscribers, **self.publishers)
+        # About merging two dictionaries without changing the original one:
+
+        # first version:
+        # dict(self.subscribers, **self.publishers)
+        # but it doesn't work with Python 3.5 if keyword args aren't strings
+
+        # cool fancy Python3.5 way:
+        # {**self.subscribers, **self.publishers}
+
+        # Python 2+3 boring compatible way:
+        conns = self.subscribers.copy()
+        conns.update(self.publishers)
+        return conns
 
     @property
     def dict(self):

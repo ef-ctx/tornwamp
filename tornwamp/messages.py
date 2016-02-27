@@ -132,7 +132,7 @@ class AbortMessage(Message):
     """
 
     def __init__(self, code=Code.ABORT, details=None, reason=None):
-        assert not reason is None, "AbortMessage must have a reason"
+        assert reason is not None, "AbortMessage must have a reason"
         self.code = code
         self.details = details or {}
         self.reason = reason
@@ -201,7 +201,7 @@ class ResultMessage(Message):
     """
 
     def __init__(self, code=Code.RESULT, request_id=None, details=None, args=None, kwargs=None):
-        assert not request_id is None, "ResultMessage must have request_id"
+        assert request_id is not None, "ResultMessage must have request_id"
         self.code = code
         self.request_id = request_id
         self.details = details or {}
@@ -225,8 +225,8 @@ class CallMessage(Message):
     """
 
     def __init__(self, code=Code.CALL, request_id=None, options=None, procedure=None, args=None, kwargs=None):
-        assert not request_id is None, "CallMessage must have request_id"
-        assert not procedure is None, "CallMessage must have procedure"
+        assert request_id is not None, "CallMessage must have request_id"
+        assert procedure is not None, "CallMessage must have procedure"
         self.code = code
         self.request_id = request_id
         self.options = options or {}
@@ -255,9 +255,9 @@ class ErrorMessage(Message):
     """
 
     def __init__(self, code=Code.ERROR, request_code=None, request_id=None, details=None, uri=None, args=None, kwargs=None):
-        assert not request_code is None, "ErrorMessage must have request_code"
-        assert not request_id is None, "ErrorMessage must have request_id"
-        assert not uri is None, "ErrorMessage must have uri"
+        assert request_code is not None, "ErrorMessage must have request_code"
+        assert request_id is not None, "ErrorMessage must have request_id"
+        assert uri is not None, "ErrorMessage must have uri"
         self.code = code
         self.request_code = request_code
         self.request_id = request_id
@@ -283,8 +283,8 @@ class SubscribeMessage(Message):
     """
 
     def __init__(self, code=Code.SUBSCRIBE, request_id=None, options=None, topic=None):
-        assert not request_id is None, "SubscribeMessage must have request_id"
-        assert not topic is None, "SubscribeMessage must have topic"
+        assert request_id is not None, "SubscribeMessage must have request_id"
+        assert topic is not None, "SubscribeMessage must have topic"
         self.code = code
         self.request_id = request_id
         self.options = options or {}
@@ -299,8 +299,8 @@ class SubscribedMessage(Message):
     [SUBSCRIBED, SUBSCRIBE.Request|id, Subscription|id]
     """
     def __init__(self, code=Code.SUBSCRIBED, request_id=None, subscription_id=None):
-        assert not request_id is None, "SubscribedMessage must have request_id"
-        assert not subscription_id is None, "SubscribedMessage must have subscription_id"
+        assert request_id is not None, "SubscribedMessage must have request_id"
+        assert subscription_id is not None, "SubscribedMessage must have subscription_id"
         self.code = code
         self.request_id = request_id
         self.subscription_id = subscription_id
@@ -316,8 +316,8 @@ class PublishMessage(Message):
     [PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list, ArgumentsKw|dict]
     """
     def __init__(self, code=Code.PUBLISH, request_id=None, options=None, topic=None, args=None, kwargs=None):
-        assert not request_id is None, "PublishMessage must have request_id"
-        assert not topic is None, "PublishMessage must have topic"
+        assert request_id is not None, "PublishMessage must have request_id"
+        assert topic is not None, "PublishMessage must have topic"
         self.code = code
         self.request_id = request_id
         self.options = options or {}
@@ -335,8 +335,8 @@ class PublishedMessage(Message):
     [PUBLISHED, PUBLISH.Request|id, Publication|id]
     """
     def __init__(self, code=Code.PUBLISHED, request_id=None, publication_id=None):
-        assert not request_id is None, "PublishedMessage must have request_id"
-        assert not publication_id is None, "PublishedMessage must have publication_id"
+        assert request_id is not None, "PublishedMessage must have request_id"
+        assert publication_id is not None, "PublishedMessage must have publication_id"
         self.code = code
         self.request_id = request_id
         self.publication_id = publication_id
@@ -352,8 +352,8 @@ class EventMessage(Message):
     [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list, PUBLISH.ArgumentsKw|dict]
     """
     def __init__(self, code=Code.EVENT, subscription_id=None, publication_id=None, details=None, args=None, kwargs=None):
-        assert not subscription_id is None, "EventMessage must have subscription_id"
-        assert not publication_id is None, "EventMessage must have publication_id"
+        assert subscription_id is not None, "EventMessage must have subscription_id"
+        assert publication_id is not None, "EventMessage must have publication_id"
         self.code = code
         self.subscription_id = subscription_id
         self.publication_id = publication_id
@@ -370,8 +370,8 @@ class UnsubscribeMessage(Message):
     [UNSUBSCRIBE, Request|id, SUBSCRIBED.Subscription|id]
     """
     def __init__(self, code=Code.UNSUBSCRIBE, request_id=None, subscription_id=None):
-        assert not request_id is None, "UnsubscribeMessage must have request_id"
-        assert not subscription_id is None, "UnsubscribeMessage must have subscription_id"
+        assert request_id is not None, "UnsubscribeMessage must have request_id"
+        assert subscription_id is not None, "UnsubscribeMessage must have subscription_id"
         self.code = code
         self.request_id = request_id
         self.subscription_id = subscription_id
@@ -384,7 +384,7 @@ class UnsubscribedMessage(Message):
     [UNSUBSCRIBED, UNSUBSCRIBE.Request|id]
     """
     def __init__(self, code=Code.UNSUBSCRIBED, request_id=None):
-        assert not request_id is None, "UnsubscribedMessage must have request_id"
+        assert request_id is not None, "UnsubscribedMessage must have request_id"
         self.code = code
         self.request_id = request_id
         self.value = [self.code, self.request_id]
