@@ -21,7 +21,7 @@ and 2^53 (9007199254740992):
 IDs in the global scope MUST be drawn randomly from a uniform distribution over
 the complete range [0, 2^53]
 
-IDs in the router fscope can be chosen freely by the specific router
+IDs in the router scope can be chosen freely by the specific router
 implementation
 
 IDs in the session scope SHOULD be incremented by 1 beginning with 1 (for each
