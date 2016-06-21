@@ -1,11 +1,29 @@
+import socket
 import unittest
 from datetime import datetime
 
-from mock import patch
+from mock import patch, MagicMock
 from tornwamp.session import ClientConnection, ConnectionDict
 
 
 class ClientConnectionTestCase(unittest.TestCase):
+
+    def test_peer_on_not_connected_socket(self):
+        ws = MagicMock()
+        ws.ws_connection.stream.socket = socket.socket()
+        ws.request.remote_ip = "127.0.0.1"
+        client = ClientConnection(ws)
+        client.id = 42
+        self.assertEqual(client.peer, "127.0.0.1:HACK|42")
+
+    def test_peer_on_closed_socket(self):
+        ws = MagicMock()
+        ws.ws_connection.stream.socket = socket.socket()
+        ws.ws_connection.stream.socket.close()
+        ws.request.remote_ip = "127.0.0.1"
+        client = ClientConnection(ws)
+        client.id = 42
+        self.assertEqual(client.peer, "127.0.0.1:HACK|42")
 
     @patch("tornwamp.session.datetime")
     @patch("tornwamp.session.create_global_id", return_value=1111)
