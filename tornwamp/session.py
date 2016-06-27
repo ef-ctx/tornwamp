@@ -1,6 +1,9 @@
 """
 Abstract websocket connections (dual channel between clients and server).
 """
+import socket
+import errno
+
 from datetime import datetime
 
 from tornwamp import topic
@@ -71,9 +74,16 @@ class ClientConnection(object):
     def peer(self):
         try:
             ip, port = self._websocket.ws_connection.stream.socket.getpeername()
-        except AttributeError:
-            ip = self._websocket.request.remote_ip
-            name = u"{0}:HACK|{1}".format(ip, self.id)
+        except (AttributeError, OSError, socket.error) as error:
+            if not hasattr(error, 'errno') or error.errno in (errno.EBADF, errno.ENOTCONN):
+                # Expected errnos:
+                #   - EBADF: bad file descriptor (connection was closed)
+                #   - ENOTCONN: not connected (connection was never open)
+                ip = self._websocket.request.remote_ip
+                name = u"{0}:HACK|{1}".format(ip, self.id)
+            else:
+                # Rethrow exception in case of unknown errno
+                raise
         else:
             forwarded_ip = self._websocket.request.headers.get("X-Forwarded-For")
             if forwarded_ip:
