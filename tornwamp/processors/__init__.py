@@ -5,6 +5,7 @@ close connection).
 """
 import abc
 import six
+
 from tornwamp.messages import Message, ErrorMessage, GoodbyeMessage, HelloMessage, WelcomeMessage
 
 
@@ -31,8 +32,8 @@ class Processor(six.with_metaclass(abc.ABCMeta)):
         # messages to be sent by the WebSocket
         self.answer_message = None  # response message
 
-        self.direct_messages = []  # to send direct messages to other connections
-        # each item must have at least two keys: "connection" and "message"
+        # message broadcasted to all subscribers, possibly via redis pub/sub
+        self.broadcast_message = None  # BroadcastMessage
 
         # the attributes below are in case we are expected to close the socket
         self.must_close = False
@@ -47,7 +48,6 @@ class Processor(six.with_metaclass(abc.ABCMeta)):
         Responsible for processing the input message and may change the default
         values for the following attributes:
         - answer_message
-        - broadcast_message
         - group_messages
 
         - must_close

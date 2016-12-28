@@ -1,8 +1,11 @@
 import unittest
 
 from mock import patch
-from tornwamp.topic import Topic, TopicsManager
+
+from tornwamp import topic as tornwamp_topic
+from tornwamp.messages import EventMessage, BroadcastMessage
 from tornwamp.session import ClientConnection
+from tornwamp.topic import Topic, TopicsManager
 
 
 class MockSubscriber(object):
@@ -10,6 +13,12 @@ class MockSubscriber(object):
 
 
 class TopicTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.old_customize = tornwamp_topic.customize
+
+    def tearDown(self):
+        tornwamp_topic.customize = self.old_customize
 
     def test_constructor(self):
         topic = Topic("the.monarchy")
@@ -36,6 +45,25 @@ class TopicTestCase(unittest.TestCase):
         topic.publishers = {3: 4}
         expected = {1: 2, 3: 4}
         self.assertEqual(topic.connections, expected)
+
+    def test_delivery_callback(self):
+        msgs = []
+
+        topic = Topic("another.topic")
+
+        def f(t, msg, publisher_connection_id):
+            self.assertEqual(publisher_connection_id, 1)
+            self.assertEqual(t, topic)
+            msgs.append(msg.json)
+
+        tornwamp_topic.customize.deliver_event_messages = f
+
+        msg = BroadcastMessage("another.topic", EventMessage(subscription_id=1, publication_id=1), 1)
+
+        ret = topic.publish(msg)
+        self.assertFalse(ret.exception())
+        self.assertTrue(ret.done())
+        self.assertEqual(msgs, [msg.event_message.json])
 
 
 class TopicsManagerTestCase(unittest.TestCase):
@@ -158,3 +186,46 @@ class TopicsManagerTestCase(unittest.TestCase):
         hopefully_sam = manager.get_connection("lord.of.the.rings", 2)
         self.assertEqual(frodo, hopefully_frodo)
         self.assertEqual(sam, hopefully_sam)
+
+
+class CustomizeTestCase(unittest.TestCase):
+
+    def setUp(self):
+        topic_name = "education.first"
+        self.original_topics = tornwamp_topic.topics
+        self.subscriber_connection = ClientConnection(None, user_id=7471)
+        tornwamp_topic.topics.add_subscriber(topic_name, self.subscriber_connection, 18273)
+        self.topic = tornwamp_topic.topics.get(topic_name)
+
+    def tearDown(self):
+        tornwamp_topic.topics = self.original_topics
+
+    def test_deliver_event_messages(self):
+        connection = ClientConnection(None, user_id=7475)
+        with patch.object(self.subscriber_connection, "_websocket") as ws:
+            tornwamp_topic.customize.deliver_event_messages(self.topic, EventMessage(subscription_id=1, publication_id=1), connection.id)
+            ws.write_message.assert_called_once_with(EventMessage(subscription_id=18273, publication_id=1).json)
+
+    def test_deliver_event_messages_none_publisher_connection_id(self):
+        connection = ClientConnection(None, user_id=7475)
+        with patch.object(self.subscriber_connection, "_websocket") as ws:
+            tornwamp_topic.customize.deliver_event_messages(self.topic, EventMessage(subscription_id=1, publication_id=1))
+            ws.write_message.assert_called_once_with(EventMessage(subscription_id=18273, publication_id=1).json)
+
+    def test_deliver_event_messages_by_publishing(self):
+        connection = ClientConnection(None, user_id=7475)
+        with patch.object(self.subscriber_connection, "_websocket") as ws:
+            msg = BroadcastMessage("education.first", EventMessage(subscription_id=1, publication_id=1), connection.id)
+            tornwamp_topic.topics.get("education.first").publish(msg)
+            ws.write_message.assert_called_once_with(EventMessage(subscription_id=18273, publication_id=1).json)
+
+    def test_deliver_event_messages_empty_topic(self):
+        connection = ClientConnection(None, user_id=7475)
+        with patch.object(self.subscriber_connection, "_websocket") as ws:
+            tornwamp_topic.customize.deliver_event_messages(Topic("education.second"), EventMessage(subscription_id=1, publication_id=1), connection.id)
+            self.assertFalse(ws.write_message.called)
+
+    def test_skip_publisher(self):
+        with patch.object(self.subscriber_connection, "_websocket") as ws:
+            tornwamp_topic.customize.deliver_event_messages(self.topic, EventMessage(subscription_id=1837, publication_id=1), self.subscriber_connection.id)
+            self.assertFalse(ws.write_message.called)

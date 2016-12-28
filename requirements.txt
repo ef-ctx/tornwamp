@@ -1,2 +1,3 @@
 tornado==4.3
 enum34
+tornadis==0.8.0

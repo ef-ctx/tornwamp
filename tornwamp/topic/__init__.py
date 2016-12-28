@@ -1,7 +1,16 @@
 """
 Used to handle PubSub topics publishers and subscribers
 """
+from tornado import gen
+from tornado.ioloop import IOLoop
+import tornadis
+
+from tornwamp.topic import customize
 from tornwamp.identifier import create_global_id
+
+
+class RedisUnavailableError(Exception):
+    pass
 
 
 class TopicsManager(dict):
@@ -14,7 +23,8 @@ class TopicsManager(dict):
         """
         Add a connection as a topic's subscriber.
         """
-        topic = self.get(topic_name, Topic(topic_name))
+        new_topic = Topic(topic_name)
+        topic = self.get(topic_name, new_topic)
         subscription_id = subscription_id or create_global_id()
         topic.subscribers[subscription_id] = connection
         self[topic_name] = topic
@@ -88,10 +98,14 @@ class Topic(object):
     """
     Represent a topic, containing its name, subscribers and publishers.
     """
-    def __init__(self, name):
+    def __init__(self, name, redis=None):
         self.name = name
         self.subscribers = {}
         self.publishers = {}
+        if redis is not None:
+            self._publisher_connection = tornadis.Client(ioloop=IOLoop.current(), autoconnect=True, **redis)
+        else:
+            self._publisher_connection = None
 
     @property
     def connections(self):
@@ -125,3 +139,21 @@ class Topic(object):
             "publishers": publishers
         }
         return data
+
+    @gen.coroutine
+    def publish(self, broadcast_msg):
+        """
+        Publish event_msg to all subscribers. This method will publish to
+        redis if redis is available. Otherwise, it will run locally and can
+        be called without yield.
+
+        The parameter publisher_connection_id is used to not publish the
+        message back to the publisher.
+        """
+        event_msg = broadcast_msg.event_message
+        customize.deliver_event_messages(self, event_msg, broadcast_msg.publisher_connection_id)
+        if self._publisher_connection is not None:
+            ret = yield self._publisher_connection.call("PUBLISH", self.name, broadcast_msg.json)
+            if isinstance(ret, tornadis.ConnectionError):
+                raise RedisUnavailableError(ret)
+            raise gen.Return(ret)

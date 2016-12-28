@@ -17,7 +17,7 @@ def ping(call_message, connection):
         details=call_message.details,
         args=["Ping response"]
     )
-    return answer, []
+    return answer, None
 
 procedures = {
     "ping": ping

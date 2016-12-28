@@ -4,8 +4,6 @@ This module should be overwride subscription procedures:
 - register: what we expect to happen (e.g. connection becomes a subscriber or
 publisher of that topic)
 """
-from tornwamp import topic as tornwamp_topic
-from tornwamp.messages import EventMessage
 
 
 def authorize_publication(topic_name, connection):
@@ -28,60 +26,11 @@ def authorize_subscription(topic_name, connection):
     return True, ""
 
 
-def add_subscriber(topic, connection):
+def get_subscribe_broadcast_message(received_message, subscription_id, connection_id):
     """
-    By default, the connection is added as a subscriber of that topic.
-    Return subscription ID.
+    Return a BroadcastMessage to be delivered to websocks, possibly connected
+    through redis pub/sub
     """
-    subscription_id = tornwamp_topic.topics.add_subscriber(topic, connection)
-    return subscription_id
-
-
-def get_subscribe_direct_messages(subscribe_message, subscription_id):
-    """
-    Return a list of dictionaries containing websocket and what message they
-    should receive. This is called from SubscribeProcessor when it succeeds.
-
-    Sample response:
-    [
-        {
-            "websocket": <tornwamp.WAMPHandler>,
-            "message": <tornwamp.messages.Event>
-        }
-    ]
-    """
-    assert subscribe_message, "get_subscribe_direct_messages requires subscribe_message"
-    assert subscription_id, "get_subscribe_direct_messages requires subscription_id"
-    return []
-
-
-def get_publish_direct_messages(publish_message, publication_id, publisher_connection):
-    """
-    Return a list of dictionaries containing websocket and what message they
-    should receive. This is called from PublishProcessor when it succeeds.
-
-    Sample response:
-    [
-        {
-            "websocket": <tornwamp.WAMPHandler>,
-            "message": <tornwamp.messages.Event>
-        }
-    """
-    data = []
-    topic_name = publish_message.topic
-    topic = tornwamp_topic.topics.get(topic_name)
-    if topic:
-        for subscription_id, connection in topic.subscribers.items():
-            if connection != publisher_connection:
-                event_message = EventMessage(
-                    subscription_id=subscription_id,
-                    publication_id=publication_id,
-                    args=publish_message.args,
-                    kwargs=publish_message.kwargs,
-                )
-                item = {
-                    "websocket": connection._websocket,
-                    "message": event_message
-                }
-                data.append(item)
-    return data
+    assert received_message is not None, "get_subscribe_broadcast_message requires a received_message"
+    assert subscription_id is not None, "get_subscribe_broadcast_message requires a subscription_id"
+    assert connection_id is not None, "get_subscribe_broadcast_message requires a connection_id"

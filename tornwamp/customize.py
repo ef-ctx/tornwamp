@@ -1,8 +1,12 @@
 """
 TornWAMP user-configurable structures.
 """
+from tornado import gen
+
+from tornwamp import topic as tornwamp_topic
 from tornwamp.processors import GoodbyeProcessor, HelloProcessor, pubsub, rpc
 from tornwamp.messages import Code
+
 
 processors = {
     Code.HELLO: HelloProcessor,
@@ -31,3 +35,10 @@ processors = {
 #    68: 'invocation',
 #    69: 'interrupt',
 #    70: 'yield'
+
+
+@gen.coroutine
+def broadcast_message(processor):
+    if processor.broadcast_message is not None:
+        topic = tornwamp_topic.topics.get(processor.broadcast_message.topic_name)
+        yield topic.publish(processor.broadcast_message)

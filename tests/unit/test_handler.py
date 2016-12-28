@@ -6,8 +6,9 @@ from tornado.web import Application
 from tornado.websocket import websocket_connect
 
 from tornwamp import messages, session, topic
-from tornwamp.handler import WAMPHandler, deliver_messages
+from tornwamp.handler import WAMPHandler
 from tornwamp.processors.pubsub import customize as pubsub_customize
+from tornwamp.processors import rpc
 
 
 class MockWebsocket(object):
@@ -21,6 +22,7 @@ class MockConnection(object):
 
     def __init__(self):
         self._websocket = MockWebsocket()
+        self.id = 1
 
     def add_subscription_channel(self, *args):
         pass
@@ -40,7 +42,12 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
 
     def setUp(self):
         session.connections = {}
+        self.old_procedures = rpc.customize.procedures
+        rpc.customize.procedures = rpc.customize.procedures.copy()
         super(WAMPHandlerTestCase, self).setUp()
+
+    def tearDown(self):
+        rpc.customize.procedures = self.old_procedures
 
     def get_app(self):
         application = Application([
@@ -48,17 +55,6 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
             (r"/no", UnauthorizeWAMPHandler)
         ])
         return application
-
-    def test_deliver_messages(self):
-        websocket = MockWebsocket()
-        items = [
-            {
-                "websocket": websocket,
-                "message": MockMessage()
-            }
-        ]
-        deliver_messages(items)
-        self.assertEqual(websocket.message, "mocked message")
 
     def build_request(self, path="ws", headers=None):
         port = self.get_http_port()
@@ -138,7 +134,10 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
     @patch("tornwamp.processors.pubsub.customize.authorize_subscription", return_value=(True, ""))
     def test_publish_event(self, mock_authorize):
         connection_subscriber = MockConnection()
-        topic.topics.add_subscriber("interstellar", connection_subscriber)
+        topic.topics.add_subscriber(
+            "interstellar",
+            connection_subscriber
+        )
 
         request = self.build_request()
         ws = yield websocket_connect(request)
@@ -150,6 +149,55 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         text = yield ws.read_message()
         published_msg = messages.PublishedMessage.from_text(text)
         self.assertEqual(published_msg.request_id, 1)
+
+        text = connection_subscriber._websocket.message
+        event_msg = messages.EventMessage.from_text(text)
+        self.assertEqual(event_msg.kwargs, {u'review': u'Mind blowing'})
+
+    @gen_test
+    def test_ping_rpc(self):
+        request = self.build_request()
+        ws = yield websocket_connect(request)
+
+        msg = messages.CallMessage(request_id=1, procedure="ping")
+        ws.write_message(msg.json)
+
+        text = yield ws.read_message()
+        message = messages.ResultMessage.from_text(text)
+        self.assertIs(message.code, messages.Code.RESULT)
+        self.assertEqual(message.args, ['Ping response'])
+
+    @gen_test
+    @patch("tornwamp.processors.pubsub.customize.authorize_subscription", return_value=(True, ""))
+    def test_broadcasting_rpc(self, mock_authorization):
+        connection_subscriber = MockConnection()
+        topic.topics.add_subscriber(
+            "interstellar",
+            connection_subscriber
+        )
+
+        request = self.build_request()
+        ws = yield websocket_connect(request)
+
+        def test(call_message, connection):
+            assert connection
+            answer = messages.ResultMessage(
+                request_id=call_message.request_id,
+                details=call_message.details,
+                args=["It works"]
+            )
+            event_msg = messages.EventMessage(publication_id=1, kwargs={u'review': u'Mind blowing'})
+            return answer, messages.BroadcastMessage("interstellar", event_msg, connection.id)
+
+        rpc.customize.procedures["test"] = test
+
+        msg = messages.CallMessage(request_id=1, procedure="test")
+        ws.write_message(msg.json)
+
+        text = yield ws.read_message()
+        message = messages.ResultMessage.from_text(text)
+        self.assertIs(message.code, messages.Code.RESULT)
+        self.assertEqual(message.args, ['It works'])
 
         text = connection_subscriber._websocket.message
         event_msg = messages.EventMessage.from_text(text)

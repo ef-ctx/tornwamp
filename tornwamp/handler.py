@@ -1,6 +1,7 @@
 """
 Implement Tornado WAMP Handler.
 """
+from tornado import gen
 from tornado.websocket import WebSocketHandler
 
 from tornwamp import customize, session
@@ -19,15 +20,6 @@ def abort(handler, error_msg, details, reason='tornwamp.error.unauthorized'):
     abort_message.error(error_msg, details)
     handler.write_message(abort_message.json)
     handler.close(1, error_msg)
-
-
-def deliver_messages(items):
-    """
-    Receives a dictionary with {websocket, message} and writes the message into the websocket
-    """
-    for item in items:
-        recipient = item["websocket"]
-        recipient.write_message(item["message"].json)
 
 
 class WAMPHandler(WebSocketHandler):
@@ -80,6 +72,7 @@ class WAMPHandler(WebSocketHandler):
         else:
             abort(self, error_msg, details)
 
+    @gen.coroutine
     def on_message(self, txt):
         """
         Handle incoming messages on the WebSocket. Each message will be parsed
@@ -95,7 +88,7 @@ class WAMPHandler(WebSocketHandler):
             if processor.answer_message is not None:
                 self.write_message(processor.answer_message.json)
 
-        deliver_messages(processor.direct_messages)
+        yield customize.broadcast_message(processor)
 
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)
