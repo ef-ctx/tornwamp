@@ -73,6 +73,7 @@ class TopicTestCase(AsyncTestCase):
         self.wait_for(node2_topic.publish(msg))
 
         # wait for all futures to execute
+        self.wait_for(self.topic._publisher_connection.call("GET", "a"))
         self.io_loop.close()
 
         event_msg.subscription_id = "7"
@@ -94,6 +95,7 @@ class TopicTestCase(AsyncTestCase):
         self.wait_for(node2_topic.publish(msg))
 
         # wait for all futures to execute
+        self.wait_for(self.topic._publisher_connection.call("GET", "a"))
         self.io_loop.close()
 
         event_msg.subscription_id = "7"
@@ -114,6 +116,7 @@ class TopicTestCase(AsyncTestCase):
         self.wait_for(self.topic.publish(msg))
 
         # wait for all futures to execute
+        self.wait_for(self.topic._publisher_connection.call("GET", "a"))
         self.io_loop.close()
 
         event_msg.subscription_id = "7"
@@ -156,6 +159,7 @@ class TopicTestCase(AsyncTestCase):
         self.wait_for(self.topic._publisher_connection.call("PUBLISH", self.topic.name, msg.json))
 
         # wait for all futures to execute
+        self.wait_for(self.topic._publisher_connection.call("GET", "a"))
         self.io_loop.close()
 
         event_msg.subscription_id = "7"
@@ -192,3 +196,35 @@ class TopicTestCase(AsyncTestCase):
 
         self.assertTrue(handler_mock.close.called)
         self.assertEqual(len(self.topic.subscribers), 0)
+
+    @gen_test
+    def test_remove_last_subscriber(self):
+        yield self.topic.add_subscriber("7", mock.MagicMock())
+
+        connection = self.topic._subscriber_connection
+        self.assertTrue(connection.is_connected())
+
+        subscriber = self.topic.remove_subscriber("7")
+        self.assertTrue(subscriber)
+
+        self.assertFalse(connection.is_connected())
+        self.assertIsNone(self.topic._subscriber_connection)
+
+    @gen_test
+    def test_remove_one_subscriber(self):
+        yield self.topic.add_subscriber("7", mock.MagicMock())
+        yield self.topic.add_subscriber("8", mock.MagicMock())
+
+        connection = self.topic._subscriber_connection
+        self.assertTrue(connection.is_connected())
+
+        subscriber = self.topic.remove_subscriber("7")
+        self.assertTrue(subscriber)
+
+        self.assertTrue(connection.is_connected())
+        self.assertIsNotNone(self.topic._subscriber_connection)
+
+    @gen_test
+    def test_remove_empty_subscriber(self):
+        subscriber = self.topic.remove_subscriber("7")
+        self.assertIsNone(subscriber)

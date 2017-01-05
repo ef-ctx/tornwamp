@@ -43,8 +43,8 @@ class TopicsManager(dict):
         - subscription_id
         """
         topic = self.get(topic_name)
-        if topic and subscription_id in topic.subscribers:
-            connection = topic.subscribers.pop(subscription_id)
+        if topic is not None:
+            connection = topic.remove_subscriber(subscription_id)
             connection.remove_subscription_channel(topic_name)
 
     def add_publisher(self, topic_name, connection, subscription_id=None):
@@ -77,7 +77,7 @@ class TopicsManager(dict):
 
         for topic_name, subscription_id in connection.topics.get("subscriber", {}).items():
             topic = self.get(topic_name)
-            topic.subscribers.pop(subscription_id, None)
+            topic.remove_subscriber(subscription_id)
 
     def get_connection(self, topic_name, subscription_id):
         """
@@ -169,9 +169,12 @@ class Topic(object):
         """
         Removes subscriber from topic
         """
-        subscriber = self.subscribers.pop(subscriber_id)
-        subscriber.remove_subscription_channel(self.name)
-        return subscriber
+        if subscriber_id in self.subscribers:
+            subscriber = self.subscribers.pop(subscriber_id)
+            if self._subscriber_connection is not None and not self.subscribers:
+                self._subscriber_connection.disconnect()
+                self._subscriber_connection = None
+            return subscriber
 
     @gen.coroutine
     def add_subscriber(self, subscription_id, connection):
