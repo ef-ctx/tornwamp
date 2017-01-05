@@ -4,7 +4,7 @@ Implement Tornado WAMP Handler.
 from tornado import gen
 from tornado.websocket import WebSocketHandler
 
-from tornwamp import customize, session
+from tornwamp import customize, session, topic
 from tornwamp.messages import AbortMessage, Message
 from tornwamp.processors import UnhandledProcessor
 
@@ -57,6 +57,8 @@ class WAMPHandler(WebSocketHandler):
         """
         Remove connection from connection's manager.
         """
+        if self.connection:
+            topic.topics.remove_connection(self.connection)
         return session.connections.pop(self.connection.id, None) if self.connection else None
 
     def open(self):

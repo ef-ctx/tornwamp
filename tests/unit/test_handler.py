@@ -5,7 +5,7 @@ from tornado.testing import AsyncHTTPTestCase, gen_test
 from tornado.web import Application
 from tornado.websocket import websocket_connect
 
-from tornwamp import messages, session, topic
+from tornwamp import messages, session, topic as tornwamp_topic
 from tornwamp.handler import WAMPHandler
 from tornwamp.processors.pubsub import customize as pubsub_customize
 from tornwamp.processors import rpc
@@ -131,10 +131,27 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
         self.assertEqual(ws.close_reason, "Closing for test purposes")
 
     @gen_test
+    def test_goodbye_unsubscribes_connection(self):
+        request = self.build_request()
+        ws = yield websocket_connect(request)
+
+        msg = messages.SubscribeMessage(request_id=5, topic="announcements")
+        ws.write_message(msg.json)
+        text = yield ws.read_message()
+        message = messages.SubscribedMessage.from_text(text)
+        self.assertEqual(message.request_id, 5)
+        self.assertEqual(len(tornwamp_topic.topics["announcements"].subscribers), 1)
+
+        msg = messages.GoodbyeMessage(details={"message": "Closing for test purposes"}, reason="close.up")
+        ws.write_message(msg.json)
+        yield ws.read_message()
+        self.assertEqual(len(tornwamp_topic.topics["announcements"].subscribers), 0)
+
+    @gen_test
     @patch("tornwamp.processors.pubsub.customize.authorize_subscription", return_value=(True, ""))
     def test_publish_event(self, mock_authorize):
         connection_subscriber = MockConnection()
-        topic.topics.add_subscriber(
+        tornwamp_topic.topics.add_subscriber(
             "interstellar",
             connection_subscriber
         )
@@ -171,7 +188,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
     @patch("tornwamp.processors.pubsub.customize.authorize_subscription", return_value=(True, ""))
     def test_broadcasting_rpc(self, mock_authorization):
         connection_subscriber = MockConnection()
-        topic.topics.add_subscriber(
+        tornwamp_topic.topics.add_subscriber(
             "interstellar",
             connection_subscriber
         )
