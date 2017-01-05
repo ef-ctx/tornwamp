@@ -4,7 +4,7 @@ import uuid
 import time
 
 from tornadis import Client, PubSubClient
-from tornado.ioloop import IOLoop
+from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.testing import gen_test, AsyncTestCase
 
 from tornwamp import session
@@ -18,12 +18,14 @@ class TopicTestCase(AsyncTestCase):
 
     def setUp(self):
         super(TopicTestCase, self).setUp()
-        self.topic = Topic(name="test", redis={"host": "127.0.0.1", "port": 6379})
-        self.old_timeout = topic.PUBSUB_TIMEOUT
+
+        self.old_pubsub_timeout = topic.PUBSUB_TIMEOUT
         topic.PUBSUB_TIMEOUT = 1
 
+        self.topic = Topic(name="test", redis={"host": "127.0.0.1", "port": 6379})
+
     def tearDown(self):
-        topic.PUBSUB_TIMEOUT = self.old_timeout
+        topic.PUBSUB_TIMEOUT = self.old_pubsub_timeout
 
     def wait_for(self, future):
         self.io_loop.add_future(future, lambda x: self.stop())
@@ -181,6 +183,18 @@ class TopicTestCase(AsyncTestCase):
 
         self.assertTrue(handler_mock.close.called)
         self.assertEqual(len(self.topic.subscribers), 0)
+
+    @gen_test
+    def test_topic_disconnect_publisher(self):
+        yield self.topic._publisher_connection.call("GET", "a")
+        self.assertTrue(self.topic._publisher_connection.is_connected())
+        self.topic._disconnect_publisher()
+        self.assertFalse(self.topic._publisher_connection.is_connected())
+
+    @gen_test
+    def test_topic_disconnect_publisher_do_nothing(self):
+        self.topic._publisher_connection = None
+        self.assertIsNone(self.topic._disconnect_publisher())
 
     def test_disconnect_redis_drop_subscribers(self):
         handler_mock = mock.MagicMock()

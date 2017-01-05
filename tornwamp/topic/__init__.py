@@ -1,8 +1,7 @@
 """
 Used to handle PubSub topics publishers and subscribers
 """
-from tornado import gen
-from tornado.ioloop import IOLoop
+from tornado import gen, ioloop
 import tornadis
 
 from tornwamp import messages
@@ -11,6 +10,7 @@ from tornwamp.identifier import create_global_id
 
 
 PUBSUB_TIMEOUT = 60
+PUBLISHER_CONNECTION_TIMEOUT = 3 * 3600 * 1000  # 3 hours in miliseconds
 
 
 class RedisUnavailableError(Exception):
@@ -109,7 +109,12 @@ class Topic(object):
         self.publishers = {}
         self.redis_params = redis
         if self.redis_params is not None:
-            self._publisher_connection = tornadis.Client(ioloop=IOLoop.current(), autoconnect=True, **self.redis_params)
+            self._publisher_connection = tornadis.Client(ioloop=ioloop.IOLoop.current(), autoconnect=True, **self.redis_params)
+            self._periodical_disconnect = ioloop.PeriodicCallback(
+                self._disconnect_publisher,
+                PUBLISHER_CONNECTION_TIMEOUT
+            )
+            self._periodical_disconnect.start()
         else:
             self._publisher_connection = None
         self._subscriber_connection = None
@@ -184,7 +189,7 @@ class Topic(object):
         otherwise, it will be a simple in memory operation only.
         """
         if self.redis_params is not None and self._subscriber_connection is None:
-            self._subscriber_connection = tornadis.PubSubClient(autoconnect=False, ioloop=IOLoop.current(), **self.redis_params)
+            self._subscriber_connection = tornadis.PubSubClient(autoconnect=False, ioloop=ioloop.IOLoop.current(), **self.redis_params)
 
             ret = yield self._subscriber_connection.connect()
             if not ret:
@@ -213,7 +218,7 @@ class Topic(object):
         """
         if self._subscriber_connection is not None and self._subscriber_connection.is_connected():
             future = self._subscriber_connection.pubsub_pop_message(deadline=PUBSUB_TIMEOUT)
-            IOLoop.current().add_future(future, self._on_redis_message)
+            ioloop.IOLoop.current().add_future(future, self._on_redis_message)
         else:
             # Connection with redis was lost
             self._drop_subscribers()
@@ -250,3 +255,11 @@ class Topic(object):
             self._on_event_message(topic_name.decode('utf-8'), raw_msg)
         else:
             self._register_redis_callback()
+
+    def _disconnect_publisher(self):
+        """
+        Disconnect periodically in order not to have several unused connections
+        of old topics.
+        """
+        if self._publisher_connection is not None:
+            self._publisher_connection.disconnect()
