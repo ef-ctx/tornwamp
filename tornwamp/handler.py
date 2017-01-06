@@ -84,6 +84,8 @@ class WAMPHandler(WebSocketHandler):
         Processor = customize.processors.get(msg.code, UnhandledProcessor)
         processor = Processor(msg, self.connection)
 
+        yield processor.process()
+
         if self.connection and not self.connection.zombie:  # TODO: cover branch else
             if processor.answer_message is not None:
                 self.write_message(processor.answer_message.json)

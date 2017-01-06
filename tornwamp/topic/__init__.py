@@ -5,8 +5,12 @@ from tornado import gen
 from tornado.ioloop import IOLoop
 import tornadis
 
+from tornwamp import messages
 from tornwamp.topic import customize
 from tornwamp.identifier import create_global_id
+
+
+PUBSUB_TIMEOUT = 60
 
 
 class RedisUnavailableError(Exception):
@@ -19,6 +23,7 @@ class TopicsManager(dict):
     publish and/or subscribe to.
     """
 
+    @gen.coroutine
     def add_subscriber(self, topic_name, connection, subscription_id=None):
         """
         Add a connection as a topic's subscriber.
@@ -26,10 +31,10 @@ class TopicsManager(dict):
         new_topic = Topic(topic_name)
         topic = self.get(topic_name, new_topic)
         subscription_id = subscription_id or create_global_id()
-        topic.subscribers[subscription_id] = connection
+        yield topic.add_subscriber(subscription_id, connection)
         self[topic_name] = topic
         connection.add_subscription_channel(subscription_id, topic_name)
-        return subscription_id
+        raise gen.Return(subscription_id)
 
     def remove_subscriber(self, topic_name, subscription_id):
         """
@@ -102,10 +107,12 @@ class Topic(object):
         self.name = name
         self.subscribers = {}
         self.publishers = {}
-        if redis is not None:
-            self._publisher_connection = tornadis.Client(ioloop=IOLoop.current(), autoconnect=True, **redis)
+        self.redis_params = redis
+        if self.redis_params is not None:
+            self._publisher_connection = tornadis.Client(ioloop=IOLoop.current(), autoconnect=True, **self.redis_params)
         else:
             self._publisher_connection = None
+        self._subscriber_connection = None
 
     @property
     def connections(self):
@@ -157,3 +164,86 @@ class Topic(object):
             if isinstance(ret, tornadis.ConnectionError):
                 raise RedisUnavailableError(ret)
             raise gen.Return(ret)
+
+    def remove_subscriber(self, subscriber_id):
+        """
+        Removes subscriber from topic
+        """
+        subscriber = self.subscribers.pop(subscriber_id)
+        subscriber.remove_subscription_channel(self.name)
+        return subscriber
+
+    @gen.coroutine
+    def add_subscriber(self, subscription_id, connection):
+        """
+        Add subscriber to a topic. It will register in redis if it is
+        available (ie. redis parameter was passed to the constructor),
+        otherwise, it will be a simple in memory operation only.
+        """
+        if self.redis_params is not None and self._subscriber_connection is None:
+            self._subscriber_connection = tornadis.PubSubClient(autoconnect=False, ioloop=IOLoop.current(), **self.redis_params)
+
+            ret = yield self._subscriber_connection.connect()
+            if not ret:
+                raise RedisUnavailableError(ret)
+
+            try:
+                ret = yield self._subscriber_connection.pubsub_subscribe(self.name)
+            except TypeError:
+                # workaround tornadis bug
+                # (https://github.com/thefab/tornadis/pull/39)
+                # This can be reached in Python 3.x
+                raise RedisUnavailableError(str(self.redis_params))
+            if not ret:
+                # this will only be reached when the previously mentioned bug
+                # is fixed
+                # This can be reached in Python 2.7
+                raise RedisUnavailableError(ret)
+
+            self._register_redis_callback()
+        self.subscribers[subscription_id] = connection
+
+    def _register_redis_callback(self):
+        """
+        Listens for new messages. If connection was dropped, then disconnect
+        all subscribers.
+        """
+        if self._subscriber_connection is not None and self._subscriber_connection.is_connected():
+            future = self._subscriber_connection.pubsub_pop_message(deadline=PUBSUB_TIMEOUT)
+            IOLoop.current().add_future(future, self._on_redis_message)
+        else:
+            # Connection with redis was lost
+            self._drop_subscribers()
+
+    def _drop_subscribers(self):
+        """
+        Drop all subscribers of this topic. This is called when connection to
+        redis is lost.
+
+        In case we get disconnected from redis we want to drop the connection
+        of all subscribers so they know this happened.  Otherwise,
+        subscribers could unknowingly lose messages.
+        """
+        for subscriber_id in list(self.subscribers.keys()):
+            subscriber = self.remove_subscriber(subscriber_id)
+            subscriber._websocket.close()
+
+    def _on_event_message(self, topic_name, raw_msg):
+        msg = messages.BroadcastMessage.from_text(raw_msg.decode("utf-8"))
+        assert_msg = "broadcast message topic and redis pub/sub queue must match ({} != {})".format(topic_name, msg.topic_name)
+        assert topic_name == msg.topic_name, assert_msg
+        if msg.publisher_node_id != messages.PUBLISHER_NODE_ID.hex:
+            customize.deliver_event_messages(self, msg.event_message, None)
+
+    def _on_redis_message(self, fut):
+        result = fut.result()
+        if isinstance(result, tornadis.ConnectionError) or isinstance(result, tornadis.ClientError):
+            # Connection with redis was lost
+            self._drop_subscribers()
+        elif result is not None:
+            self._register_redis_callback()
+            type_, topic_name, raw_msg = result
+            assert type_.decode("utf-8") == u"message", "got wrong message type from pop_message: {}".format(type_)
+            self._on_event_message(topic_name.decode('utf-8'), raw_msg)
+        else:
+            self._register_redis_callback()

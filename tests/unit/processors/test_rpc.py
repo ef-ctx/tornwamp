@@ -16,6 +16,7 @@ class CallProcessorTestCase(unittest.TestCase):
     def test_call_processor_ping(self):
         message = CallMessage(request_id=918273, procedure="ping")
         processor = CallProcessor(message, connection)
+        processor.process()
         response = processor.answer_message
         self.assertEqual(response.code, Code.RESULT)
         self.assertEqual(response.request_id, 918273)
@@ -24,6 +25,7 @@ class CallProcessorTestCase(unittest.TestCase):
     def test_call_processor_unsupported_method(self):
         message = CallMessage(request_id=192837, procedure="abc")
         processor = CallProcessor(message, connection)
+        processor.process()
         response = processor.answer_message
         self.assertEqual(response.code, Code.ERROR)
         self.assertEqual(response.request_id, 192837)

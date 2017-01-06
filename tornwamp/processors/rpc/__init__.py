@@ -17,6 +17,7 @@ class CallProcessor(Processor):
     """
     Responsible for dealing with CALL messages.
     """
+    @gen.coroutine
     def process(self):
         """
         Call method defined in tornwamp.customize.procedures (dict).
