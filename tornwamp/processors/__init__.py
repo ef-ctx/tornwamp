@@ -60,7 +60,6 @@ class UnhandledProcessor(Processor):
     """
     Raises an error when the provided message can't be parsed
     """
-    @gen.coroutine
     def process(self):
         message = Message(*self.message.value)
         description = "Unsupported message {0}".format(self.message.value)
@@ -77,7 +76,6 @@ class HelloProcessor(Processor):
     """
     Responsible for dealing HELLO messages.
     """
-    @gen.coroutine
     def process(self):
         """
         Return WELCOME message based on the input HELLO message.
@@ -92,7 +90,6 @@ class GoodbyeProcessor(Processor):
     """
     Responsible for dealing GOODBYE messages.
     """
-    @gen.coroutine
     def process(self):
         self.answer_message = GoodbyeMessage(*self.message.value)
         self.must_close = True

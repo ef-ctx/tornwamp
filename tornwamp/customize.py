@@ -37,8 +37,7 @@ processors = {
 #    70: 'yield'
 
 
-@gen.coroutine
 def broadcast_message(processor):
     if processor.broadcast_message is not None:
         topic = tornwamp_topic.topics.get(processor.broadcast_message.topic_name)
-        yield topic.publish(processor.broadcast_message)
+        topic.publish(processor.broadcast_message)

@@ -4,6 +4,8 @@ Implement Tornado WAMP Handler.
 from tornado import gen
 from tornado.websocket import WebSocketHandler
 
+import greenlet_tornado
+
 from tornwamp import customize, session, topic
 from tornwamp.messages import AbortMessage, Message
 from tornwamp.processors import UnhandledProcessor
@@ -74,7 +76,7 @@ class WAMPHandler(WebSocketHandler):
         else:
             abort(self, error_msg, details)
 
-    @gen.coroutine
+    @greenlet_tornado.asynchronous
     def on_message(self, txt):
         """
         Handle incoming messages on the WebSocket. Each message will be parsed
@@ -86,13 +88,13 @@ class WAMPHandler(WebSocketHandler):
         Processor = customize.processors.get(msg.code, UnhandledProcessor)
         processor = Processor(msg, self.connection)
 
-        yield processor.process()
+        processor.process()
 
         if self.connection and not self.connection.zombie:  # TODO: cover branch else
             if processor.answer_message is not None:
                 self.write_message(processor.answer_message.json)
 
-        yield customize.broadcast_message(processor)
+        customize.broadcast_message(processor)
 
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)

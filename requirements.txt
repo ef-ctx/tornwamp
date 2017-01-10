@@ -1,3 +1,5 @@
+greenlet==0.4.9
 tornado==4.3
 enum34
 tornadis==0.8.0
+-e git+git@github.com:aflag/greenlet-tornado.git@master#egg=greenlet_tornado

@@ -13,7 +13,6 @@ class SubscribeProcessor(Processor):
     """
     Responsible for dealing SUBSCRIBE messages.
     """
-    @gen.coroutine
     def process(self):
         """
         Return SUBSCRIBE message based on the input HELLO message.
@@ -21,7 +20,7 @@ class SubscribeProcessor(Processor):
         received_message = SubscribeMessage(*self.message.value)
         allow, msg = customize.authorize_subscription(received_message.topic, self.connection)
         if allow:
-            subscription_id = yield tornwamp_topic.topics.add_subscriber(
+            subscription_id = tornwamp_topic.topics.add_subscriber(
                 received_message.topic,
                 self.connection,
             )
@@ -44,7 +43,6 @@ class PublishProcessor(Processor):
     """
     Responsible for dealing SUBSCRIBE messages.
     """
-    @gen.coroutine
     def process(self):
         """
         Return SUBSCRIBE message based on the input HELLO message.

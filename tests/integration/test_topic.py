@@ -3,10 +3,12 @@ import socket
 import uuid
 import time
 
+import greenlet
 from tornadis import Client, PubSubClient
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.testing import gen_test, AsyncTestCase
 
+import tornwamp
 from tornwamp import session
 from tornwamp import handler
 from tornwamp import topic
@@ -28,7 +30,14 @@ class TopicTestCase(AsyncTestCase):
         topic.PUBSUB_TIMEOUT = self.old_pubsub_timeout
 
     def wait_for(self, future):
-        self.io_loop.add_future(future, lambda x: self.stop())
+        self.io_loop.add_future(future, lambda x: self.stop(x.result()))
+        return self.wait()
+
+    def _run_greenlet(self, method, *args, **kwargs):
+        def run():
+            self.stop(method(*args, **kwargs))
+        gr = greenlet.greenlet(run)
+        gr.switch()
         return self.wait()
 
     def test_create_connection(self):
@@ -36,7 +45,6 @@ class TopicTestCase(AsyncTestCase):
         self.assertFalse(self.topic._publisher_connection.is_connected())
         self.assertTrue(self.topic._publisher_connection.autoconnect)
 
-    @gen_test
     def test_publish_message(self):
         # We use a dummy connection id as we are not testing local delivery
         msg = BroadcastMessage(
@@ -45,34 +53,34 @@ class TopicTestCase(AsyncTestCase):
             1,
         )
         client = PubSubClient(autoconnect=True, ioloop=IOLoop.current())
-        yield client.pubsub_subscribe("test")
-        ret = yield self.topic.publish(msg)
+
+        self.wait_for(client.pubsub_subscribe("test"))
+        ret = self._run_greenlet(self.topic.publish, msg)
         self.assertTrue(ret)
-        type_, topic, received_msg = yield client.pubsub_pop_message()
+        type_, topic, received_msg = self.wait_for(client.pubsub_pop_message())
         self.assertEqual(type_.decode("utf-8"), u"message")
         self.assertEqual(topic.decode("utf-8"), u"test")
         received_msg = BroadcastMessage.from_text(received_msg.decode("utf-8"))
         self.assertEqual(received_msg.json, msg.json)
 
-    @gen_test
     def test_publish_redis_fails(self):
         with self.assertRaises(RedisUnavailableError):
             with mock.patch.object(self.topic._publisher_connection, "is_connected", return_value=False):
                 msg = BroadcastMessage("test", EventMessage(subscription_id="1", publication_id="1"), 1)
                 # We use a dummy connection id as we are not testing local delivery
-                yield self.topic.publish(msg)
+                self._run_greenlet(self.topic.publish, msg)
 
     def test_receive_message_from_other_node(self):
         handler_mock = mock.MagicMock()
 
         connection = session.ClientConnection(handler_mock)
-        self.wait_for(self.topic.add_subscriber("7", connection))
+        self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
         event_msg = EventMessage(subscription_id="1", publication_id="1", kwargs={"type": "test"})
         msg = BroadcastMessage("test", event_msg, 1)
         msg.publisher_node_id = uuid.uuid4().hex
         node2_topic = Topic(name="test", redis={"host": "127.0.0.1", "port": 6379})
-        self.wait_for(node2_topic.publish(msg))
+        self._run_greenlet(node2_topic.publish, msg)
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
@@ -85,16 +93,16 @@ class TopicTestCase(AsyncTestCase):
         handler_mock = mock.MagicMock()
 
         connection = session.ClientConnection(handler_mock)
-        self.wait_for(self.topic.add_subscriber("7", connection))
+        self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
         event_msg = EventMessage(subscription_id="1", publication_id="1", kwargs={"type": "test"})
         msg = BroadcastMessage("test", event_msg, 1)
         msg.publisher_node_id = uuid.uuid4().hex
         node2_topic = Topic(name="test", redis={"host": "127.0.0.1", "port": 6379})
-        self.wait_for(node2_topic.publish(msg))
+        self._run_greenlet(node2_topic.publish, msg)
 
         event_msg.kwargs["type"] = "test2"
-        self.wait_for(node2_topic.publish(msg))
+        self._run_greenlet(node2_topic.publish, msg)
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
@@ -111,11 +119,11 @@ class TopicTestCase(AsyncTestCase):
         handler_mock = mock.MagicMock()
 
         connection = session.ClientConnection(handler_mock)
-        self.wait_for(self.topic.add_subscriber("7", connection))
+        self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
         event_msg = EventMessage(subscription_id="1", publication_id="1", kwargs={"type": "test"})
         msg = BroadcastMessage("test", event_msg, 1)
-        self.wait_for(self.topic.publish(msg))
+        self._run_greenlet(self.topic.publish, msg)
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
@@ -124,41 +132,37 @@ class TopicTestCase(AsyncTestCase):
         event_msg.subscription_id = "7"
         handler_mock.write_message.assert_called_once_with(event_msg.json)
 
-    @gen_test
     def test_redis_fails_on_publish(self):
         event_msg = EventMessage(subscription_id="1", publication_id="1", kwargs={"type": "test"})
         msg = BroadcastMessage("test", event_msg, 1)
         with self.assertRaises(RedisUnavailableError):
             with mock.patch.object(self.topic._publisher_connection, "is_connected", return_value=False):
-                yield self.topic.publish(msg)
+                self._run_greenlet(self.topic.publish, msg)
 
-    @gen_test
     def test_redis_fails_on_subscribe(self):
         connection = session.ClientConnection(mock.MagicMock())
         with self.assertRaises(RedisUnavailableError):
             with mock.patch("tornadis.PubSubClient.is_connected", return_value=False):
-                yield self.topic.add_subscriber("7", connection)
+                self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
-    @gen_test
     def test_redis_fails_to_connect(self):
         connection = session.ClientConnection(mock.MagicMock())
         with self.assertRaises(RedisUnavailableError):
             with mock.patch("socket.socket.connect", side_effect=socket.error):
-                yield self.topic.add_subscriber("7", connection)
-
+                self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
     def test_pop_message_timeout(self):
         handler_mock = mock.MagicMock()
 
         connection = session.ClientConnection(handler_mock)
-        self.wait_for(self.topic.add_subscriber("7", connection))
+        self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
         time.sleep(1.5)
 
         event_msg = EventMessage(subscription_id="1", publication_id="1", kwargs={"type": "test"})
         msg = BroadcastMessage("test", event_msg, 1)
         msg.publisher_node_id = uuid.uuid4().hex
-        self.wait_for(self.topic._publisher_connection.call("PUBLISH", self.topic.name, msg.json))
+        self._run_greenlet(self.topic._publisher_connection.call, "PUBLISH", self.topic.name, msg.json)
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
@@ -171,7 +175,7 @@ class TopicTestCase(AsyncTestCase):
         handler_mock = mock.MagicMock()
 
         connection = session.ClientConnection(handler_mock)
-        self.wait_for(self.topic.add_subscriber("7", connection))
+        self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
         self.topic._subscriber_connection = None
 
@@ -184,14 +188,12 @@ class TopicTestCase(AsyncTestCase):
         self.assertTrue(handler_mock.close.called)
         self.assertEqual(len(self.topic.subscribers), 0)
 
-    @gen_test
     def test_topic_disconnect_publisher(self):
-        yield self.topic._publisher_connection.call("GET", "a")
+        self.wait_for(self.topic._publisher_connection.call("GET", "a"))
         self.assertTrue(self.topic._publisher_connection.is_connected())
         self.topic._disconnect_publisher()
         self.assertFalse(self.topic._publisher_connection.is_connected())
 
-    @gen_test
     def test_topic_disconnect_publisher_do_nothing(self):
         self.topic._publisher_connection = None
         self.assertIsNone(self.topic._disconnect_publisher())
@@ -200,7 +202,7 @@ class TopicTestCase(AsyncTestCase):
         handler_mock = mock.MagicMock()
 
         connection = session.ClientConnection(handler_mock)
-        self.wait_for(self.topic.add_subscriber("7", connection))
+        self._run_greenlet(self.topic.add_subscriber, "7", connection)
 
         self.topic._subscriber_connection.disconnect()
 
@@ -211,9 +213,8 @@ class TopicTestCase(AsyncTestCase):
         self.assertTrue(handler_mock.close.called)
         self.assertEqual(len(self.topic.subscribers), 0)
 
-    @gen_test
     def test_remove_last_subscriber(self):
-        yield self.topic.add_subscriber("7", mock.MagicMock())
+        self._run_greenlet(self.topic.add_subscriber, "7", mock.MagicMock())
 
         connection = self.topic._subscriber_connection
         self.assertTrue(connection.is_connected())
@@ -224,10 +225,9 @@ class TopicTestCase(AsyncTestCase):
         self.assertFalse(connection.is_connected())
         self.assertIsNone(self.topic._subscriber_connection)
 
-    @gen_test
     def test_remove_one_subscriber(self):
-        yield self.topic.add_subscriber("7", mock.MagicMock())
-        yield self.topic.add_subscriber("8", mock.MagicMock())
+        self._run_greenlet(self.topic.add_subscriber, "7", mock.MagicMock())
+        self._run_greenlet(self.topic.add_subscriber, "8", mock.MagicMock())
 
         connection = self.topic._subscriber_connection
         self.assertTrue(connection.is_connected())
@@ -238,7 +238,6 @@ class TopicTestCase(AsyncTestCase):
         self.assertTrue(connection.is_connected())
         self.assertIsNotNone(self.topic._subscriber_connection)
 
-    @gen_test
     def test_remove_empty_subscriber(self):
         subscriber = self.topic.remove_subscriber("7")
         self.assertIsNone(subscriber)

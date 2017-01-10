@@ -4,7 +4,7 @@ Used to handle PubSub topics publishers and subscribers
 from tornado import gen, ioloop
 import tornadis
 
-from tornwamp import messages
+from tornwamp import messages, utils
 from tornwamp.topic import customize
 from tornwamp.identifier import create_global_id
 
@@ -23,7 +23,6 @@ class TopicsManager(dict):
     publish and/or subscribe to.
     """
 
-    @gen.coroutine
     def add_subscriber(self, topic_name, connection, subscription_id=None):
         """
         Add a connection as a topic's subscriber.
@@ -31,10 +30,10 @@ class TopicsManager(dict):
         new_topic = Topic(topic_name)
         topic = self.get(topic_name, new_topic)
         subscription_id = subscription_id or create_global_id()
-        yield topic.add_subscriber(subscription_id, connection)
+        topic.add_subscriber(subscription_id, connection)
         self[topic_name] = topic
         connection.add_subscription_channel(subscription_id, topic_name)
-        raise gen.Return(subscription_id)
+        return subscription_id
 
     def remove_subscriber(self, topic_name, subscription_id):
         """
@@ -152,7 +151,6 @@ class Topic(object):
         }
         return data
 
-    @gen.coroutine
     def publish(self, broadcast_msg):
         """
         Publish event_msg to all subscribers. This method will publish to
@@ -165,10 +163,10 @@ class Topic(object):
         event_msg = broadcast_msg.event_message
         customize.deliver_event_messages(self, event_msg, broadcast_msg.publisher_connection_id)
         if self._publisher_connection is not None:
-            ret = yield self._publisher_connection.call("PUBLISH", self.name, broadcast_msg.json)
+            ret = utils.run_async(self._publisher_connection.call("PUBLISH", self.name, broadcast_msg.json))
             if isinstance(ret, tornadis.ConnectionError):
                 raise RedisUnavailableError(ret)
-            raise gen.Return(ret)
+            return ret
 
     def remove_subscriber(self, subscriber_id):
         """
@@ -181,7 +179,6 @@ class Topic(object):
                 self._subscriber_connection = None
             return subscriber
 
-    @gen.coroutine
     def add_subscriber(self, subscription_id, connection):
         """
         Add subscriber to a topic. It will register in redis if it is
@@ -191,12 +188,12 @@ class Topic(object):
         if self.redis_params is not None and self._subscriber_connection is None:
             self._subscriber_connection = tornadis.PubSubClient(autoconnect=False, ioloop=ioloop.IOLoop.current(), **self.redis_params)
 
-            ret = yield self._subscriber_connection.connect()
+            ret = utils.run_async(self._subscriber_connection.connect())
             if not ret:
                 raise RedisUnavailableError(ret)
 
             try:
-                ret = yield self._subscriber_connection.pubsub_subscribe(self.name)
+                ret = utils.run_async(self._subscriber_connection.pubsub_subscribe(self.name))
             except TypeError:
                 # workaround tornadis bug
                 # (https://github.com/thefab/tornadis/pull/39)

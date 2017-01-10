@@ -60,9 +60,7 @@ class TopicTestCase(unittest.TestCase):
 
         msg = BroadcastMessage("another.topic", EventMessage(subscription_id=1, publication_id=1), 1)
 
-        ret = topic.publish(msg)
-        self.assertFalse(ret.exception())
-        self.assertTrue(ret.done())
+        topic.publish(msg)
         self.assertEqual(msgs, [msg.event_message.json])
 
 
