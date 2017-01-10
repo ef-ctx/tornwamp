@@ -24,7 +24,6 @@ class ProcessorTestCase(unittest.TestCase):
     def test_unhandled_processor(self):
         message = Message(*[456, 34, 'wamp.undefined.message'])
         processor = UnhandledProcessor(message, connection)
-        processor.process()
         details = "Unsupported message [456, 34, 'wamp.undefined.message']"
         response = processor.answer_message
         self.assertEqual(response.code, Code.ERROR)
@@ -35,14 +34,12 @@ class ProcessorTestCase(unittest.TestCase):
     def test_hello_processor(self):
         message = HelloMessage(realm="earth")
         processor = HelloProcessor(message, connection)
-        processor.process()
         response = processor.answer_message
         self.assertEqual(response.code, Code.WELCOME)
 
     def test_goodbye_processor(self):
         message = GoodbyeMessage(details={"message": "adios"}, reason="i.dont.like.you")
         processor = GoodbyeProcessor(message, connection)
-        processor.process()
         response = processor.answer_message
         self.assertEqual(response.code, Code.GOODBYE)
         self.assertEqual(response.details, {"message": "adios"})

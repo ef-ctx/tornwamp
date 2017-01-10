@@ -12,7 +12,6 @@ class SubscribeProcessorTestCase(unittest.TestCase):
         message = SubscribeMessage(request_id=123, topic="olympic.games")
         connection = ClientConnection(None)
         processor = SubscribeProcessor(message, connection)
-        processor.process()
         answer = processor.answer_message
         self.assertEqual(answer.code, Code.SUBSCRIBED)
         self.assertIsInstance(answer.subscription_id, int)
@@ -23,7 +22,6 @@ class SubscribeProcessorTestCase(unittest.TestCase):
         message = SubscribeMessage(request_id=234, topic="olympic.games")
         connection = ClientConnection(None)
         processor = SubscribeProcessor(message, connection)
-        processor.process()
         answer = processor.answer_message
         self.assertEqual(answer.code, Code.ERROR)
         self.assertEqual(answer.request_id, 234)
@@ -37,7 +35,6 @@ class PublishProcessorTestCase(unittest.TestCase):
         message = PublishMessage(request_id=345, topic="world.cup")
         connection = ClientConnection(None)
         processor = PublishProcessor(message, connection)
-        processor.process()
         answer = processor.answer_message
         self.assertEqual(answer, None)
 
@@ -46,7 +43,6 @@ class PublishProcessorTestCase(unittest.TestCase):
         message = PublishMessage(request_id=345, topic="world.cup", options=options)
         connection = ClientConnection(None)
         processor = PublishProcessor(message, connection)
-        processor.process()
         answer = processor.answer_message
         self.assertEqual(answer.code, Code.PUBLISHED)
         self.assertEqual(answer.request_id, 345)
@@ -56,7 +52,6 @@ class PublishProcessorTestCase(unittest.TestCase):
         message = PublishMessage(request_id=456, topic="world.cup")
         connection = ClientConnection(None)
         processor = PublishProcessor(message, connection)
-        processor.process()
         answer = processor.answer_message
         self.assertEqual(answer.code, Code.ERROR)
         self.assertEqual(answer.request_id, 456)

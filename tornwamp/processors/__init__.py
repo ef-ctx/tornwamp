@@ -42,6 +42,8 @@ class Processor(six.with_metaclass(abc.ABCMeta)):
         self.close_code = None
         self.close_reason = None
 
+        self.process()
+
     @abc.abstractmethod
     def process(self):
         """
