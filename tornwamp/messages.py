@@ -13,6 +13,7 @@ from tornwamp.identifier import create_global_id
 
 PUBLISHER_NODE_ID = uuid.uuid4()
 
+
 class Code(IntEnum):
     """
     Enum which represents currently supported WAMP messages.

@@ -2,6 +2,7 @@
 This module allows customization of methods used by pub/sub
 """
 
+
 def deliver_event_messages(topic, event_msg, publisher_connection_id=None):
     """
     This method may be overridden. It is called whenever an EventMessage
