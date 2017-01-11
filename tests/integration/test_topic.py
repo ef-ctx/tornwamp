@@ -11,7 +11,7 @@ from tornado.testing import gen_test, AsyncTestCase
 import tornwamp
 from tornwamp import session
 from tornwamp import handler
-from tornwamp import topic
+from tornwamp import topic as tornwamp_topic
 from tornwamp.messages import Message, EventMessage, BroadcastMessage
 from tornwamp.topic import Topic, RedisUnavailableError
 
@@ -21,13 +21,13 @@ class TopicTestCase(AsyncTestCase):
     def setUp(self):
         super(TopicTestCase, self).setUp()
 
-        self.old_pubsub_timeout = topic.PUBSUB_TIMEOUT
-        topic.PUBSUB_TIMEOUT = 1
+        self.old_pubsub_timeout = tornwamp_topic.PUBSUB_TIMEOUT
+        tornwamp_topic.PUBSUB_TIMEOUT = 1
 
         self.topic = Topic(name="test", redis={"host": "127.0.0.1", "port": 6379})
 
     def tearDown(self):
-        topic.PUBSUB_TIMEOUT = self.old_pubsub_timeout
+        tornwamp_topic.PUBSUB_TIMEOUT = self.old_pubsub_timeout
 
     def wait_for(self, future):
         self.io_loop.add_future(future, lambda x: self.stop(x.result()))
