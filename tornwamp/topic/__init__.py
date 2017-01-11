@@ -22,12 +22,14 @@ class TopicsManager(dict):
     Manages all existing topics to which connections can potentially
     publish and/or subscribe to.
     """
+    def __init__(self):
+        self.redis = None
 
     def add_subscriber(self, topic_name, connection, subscription_id=None):
         """
         Add a connection as a topic's subscriber.
         """
-        new_topic = Topic(topic_name)
+        new_topic = Topic(topic_name, self.redis)
         topic = self.get(topic_name, new_topic)
         subscription_id = subscription_id or create_global_id()
         topic.add_subscriber(subscription_id, connection)
@@ -50,7 +52,7 @@ class TopicsManager(dict):
         """
         Add a connection as a topic's publisher.
         """
-        topic = self.get(topic_name, Topic(topic_name))
+        topic = self.get(topic_name, Topic(topic_name, self.redis))
         subscription_id = subscription_id or create_global_id()
         topic.publishers[subscription_id] = connection
         self[topic_name] = topic
