@@ -25,6 +25,11 @@ class ClientConnectionTestCase(unittest.TestCase):
         client.id = 42
         self.assertEqual(client.peer, "127.0.0.1:HACK|42")
 
+    def test_topics_by_subscription_id(self):
+        connection = ClientConnection(None)
+        connection.add_subscription_channel(10, "weird")
+        self.assertEqual(connection.topics_by_subscription_id[10], "weird")
+
     @patch("tornwamp.session.datetime")
     @patch("tornwamp.session.create_global_id", return_value=1111)
     def test_client_connection_with_details(self, mock_global_id, mock_datetime):
