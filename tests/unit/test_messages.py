@@ -105,6 +105,35 @@ class MessageTestCase(unittest.TestCase):
         expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
 
+    def test_build_error_message(self):
+        call_message = wamp.CallMessage(
+            request_id=8259,
+            procedure="ping",
+        )
+        uri = "bad.bed.bug"
+        description = "don't let the bed bug bite you"
+        computed = wamp.build_error_message(
+            in_message=call_message.json,
+            uri=uri,
+            description=description,
+        )
+        expected_message = wamp.ErrorMessage(
+            request_code=Code.CALL,
+            request_id=8259,
+            uri=uri,
+        )
+        expected_message.error(description)
+        self.assertEqual(computed, expected_message.json)
+
+    def test_build_error_message_not_error_prone(self):
+        hello_message = wamp.HelloMessage()
+        result = wamp.build_error_message(
+            in_message=hello_message.json,
+            uri="bad.bed.bug",
+            description="don't let the bed bug bite you",
+        )
+        self.assertIsNone(result)
+
     def test_subscribe_message(self):
         subscribe_message = wamp.SubscribeMessage(request_id=1395, topic="lesson.1")
         self.assertEqual(subscribe_message.code, Code.SUBSCRIBE)
