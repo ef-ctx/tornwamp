@@ -245,3 +245,41 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
     def test_remove_empty_subscriber(self):
         subscriber = self.topic.remove_subscriber("7")
         self.assertIsNone(subscriber)
+
+
+class TopicManagerTestCase(AsyncTestCase, AsyncMixin):
+
+    def setUp(self):
+        super(TopicManagerTestCase, self).setUp()
+
+        tornwamp_topic.topics.redis = {"host": "127.0.0.1", "port": 6379}
+
+    def tearDown(self):
+        tornwamp_topic.topics.redis = None
+
+        super(TopicManagerTestCase, self).tearDown()
+
+    def test_add_subscriber(self):
+        handler_mock = mock.MagicMock()
+
+        connection = session.ClientConnection(handler_mock)
+
+        sub_id = self.run_greenlet(tornwamp_topic.topics.add_subscriber, "test", connection)
+        self.assertIsNotNone(sub_id)
+
+        # We use a dummy connection id as we are not testing local delivery
+        msg = BroadcastMessage(
+            "test",
+            EventMessage(publication_id="1", kwargs={"type": "test"}),
+            connection.id,
+        )
+        client = PubSubClient(autoconnect=True, ioloop=IOLoop.current())
+
+        self.wait_for(client.pubsub_subscribe("test"))
+        ret = self.run_greenlet(tornwamp_topic.topics["test"].publish, msg)
+        self.assertTrue(ret)
+        type_, topic, received_msg = self.wait_for(client.pubsub_pop_message())
+        self.assertEqual(type_.decode("utf-8"), u"message")
+        self.assertEqual(topic.decode("utf-8"), u"test")
+        received_msg = BroadcastMessage.from_text(received_msg.decode("utf-8"))
+        self.assertEqual(received_msg.json, msg.json)
