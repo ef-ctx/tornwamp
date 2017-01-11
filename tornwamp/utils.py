@@ -13,7 +13,11 @@ def run_async(future):
 
     future = gr.parent.switch()
 
-    if future.exception():
+    # The following lines are actually covered in tests/unit/test_utils.py,
+    # however, coverage is not able to report it (even with concurrency =
+    # greenlet!). Maybe it is due to the intarction with both greenlet and
+    # tornado.
+    if future.exception():  # pragma: no cover
         raise future.exception()
-    else:
+    else:  # pragma: no cover
         return future.result()
