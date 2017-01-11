@@ -43,6 +43,7 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
     def tearDown(self):
         tornwamp_topic.PUBSUB_TIMEOUT = self.old_pubsub_timeout
 
+        super(TopicTestCase, self).tearDown()
 
     def test_create_connection(self):
         self.assertIsInstance(self.topic._publisher_connection, Client)
@@ -88,7 +89,7 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.close()
+        self.io_loop.clear_instance()
 
         event_msg.subscription_id = "7"
         handler_mock.write_message.assert_called_once_with(event_msg.json)
@@ -110,7 +111,7 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.close()
+        self.io_loop.clear_instance()
 
         event_msg.subscription_id = "7"
         expected_calls = [
@@ -131,7 +132,7 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.close()
+        self.io_loop.clear_instance()
 
         event_msg.subscription_id = "7"
         handler_mock.write_message.assert_called_once_with(event_msg.json)
@@ -170,7 +171,7 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.close()
+        self.io_loop.clear_instance()
 
         event_msg.subscription_id = "7"
         handler_mock.write_message.assert_called_once_with(event_msg.json)
@@ -187,7 +188,7 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.close()
+        self.io_loop.clear_instance()
 
         self.assertTrue(handler_mock.close.called)
         self.assertEqual(len(self.topic.subscribers), 0)
@@ -212,7 +213,7 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
 
         # wait for all futures to execute
         self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.close()
+        self.io_loop.clear_instance()
 
         self.assertTrue(handler_mock.close.called)
         self.assertEqual(len(self.topic.subscribers), 0)
