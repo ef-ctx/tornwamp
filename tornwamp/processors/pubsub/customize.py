@@ -39,10 +39,14 @@ def get_subscribe_broadcast_message(received_message, subscription_id, connectio
     assert connection_id is not None, "get_subscribe_broadcast_message requires a connection_id"
 
 
-def get_publish_broadcast_message(received_message, publication_id, connection_id):
+def get_publish_messages(received_message, publication_id, connection_id):
     """
-    Return a BroadcastMessage to be delivered to websockets, possibly connected
-    through redis pub/sub
+    Return a tuple with two messages: (BroadcastMessage, PublishedMessage|ErrorMessage)
+    - BroadcastMessage: message to be delivered to the subscribers
+    - PublishedMessage|ErrorMessage: message to be returned to the publisher.
+
+    If the second element of the tuple is None, then a default PublishedMessage
+    will be returned to the publisher.
 
     This message is called whenever a message is published.
     """
@@ -51,8 +55,9 @@ def get_publish_broadcast_message(received_message, publication_id, connection_i
         args=received_message.args,
         kwargs=received_message.kwargs,
     )
-    return messages.BroadcastMessage(
+    broadcast_msg = messages.BroadcastMessage(
         topic_name=received_message.topic,
         event_message=event_message,
         publisher_connection_id=connection_id,
     )
+    return broadcast_msg, None

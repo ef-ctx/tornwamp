@@ -52,12 +52,15 @@ class PublishProcessor(Processor):
         answer = None
         if allow:
             publication_id = create_global_id()
+            self.broadcast_message, response = customize.get_publish_messages(received_message, publication_id, self.connection.id)
             if received_message.options.get("acknowledge"):
-                answer = PublishedMessage(
-                    request_id=received_message.request_id,
-                    publication_id=publication_id
-                )
-            self.broadcast_message = customize.get_publish_broadcast_message(received_message, publication_id, self.connection.id)
+                if response is None:
+                    answer = PublishedMessage(
+                        request_id=received_message.request_id,
+                        publication_id=publication_id
+                    )
+                else:
+                    answer = response
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
