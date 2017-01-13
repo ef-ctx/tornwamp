@@ -20,9 +20,8 @@ redis pub/sub.
   cutomize which websocket connections should receive the message (this takes
   the role which was performed by direct_messages attribute and the second
   element of the tuple returned by rpc calls)
-* Processor's __init__ no longer calls process, which is a coroutine which has
-  to be called separately.
 * The second element on the tuple returned by rpc calls need to be either None
   or a BroadcastMessage
 * Added support for redis pubsub, allowing multiple tornwamp instances to
   communicate.
+  
