@@ -57,16 +57,7 @@ class PublishProcessor(Processor):
                     request_id=received_message.request_id,
                     publication_id=publication_id
                 )
-            event_message = EventMessage(
-                publication_id=publication_id,
-                args=received_message.args,
-                kwargs=received_message.kwargs,
-            )
-            self.broadcast_message = BroadcastMessage(
-                topic_name=received_message.topic,
-                event_message=event_message,
-                publisher_connection_id=self.connection.id,
-            )
+            self.broadcast_message = customize.get_publish_broadcast_message(received_message, publication_id, self.connection.id)
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
