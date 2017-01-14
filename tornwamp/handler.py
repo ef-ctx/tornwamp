@@ -92,7 +92,7 @@ class WAMPHandler(WebSocketHandler):
             if processor.answer_message is not None:
                 self.write_message(processor.answer_message.json)
 
-        customize.broadcast_message(processor)
+        customize.broadcast_messages(processor)
 
         if processor.must_close:
             self.close(processor.close_code, processor.close_reason)

@@ -34,8 +34,8 @@ class Processor(six.with_metaclass(abc.ABCMeta)):
         # messages to be sent by the WebSocket
         self.answer_message = None  # response message
 
-        # message broadcasted to all subscribers, possibly via redis pub/sub
-        self.broadcast_message = None  # BroadcastMessage
+        # messages broadcasted to all subscribers, possibly via redis pub/sub
+        self.broadcast_messages = []
 
         # the attributes below are in case we are expected to close the socket
         self.must_close = False

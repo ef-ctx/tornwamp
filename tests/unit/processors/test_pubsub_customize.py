@@ -19,6 +19,6 @@ class CustomizeTestCase(unittest.TestCase):
     def tearDown(self):
         topic.topics = self.original_topics
 
-    def test_get_broadcast_message(self):
+    def test_get_broadcast_messages(self):
         msg = SubscribeMessage(request_id=9581, topic="dolphins.are.non.human.people")
-        self.assertIsNone(customize.get_subscribe_broadcast_message(msg, 637, 5))
+        self.assertFalse(customize.get_subscribe_broadcast_messages(msg, 637, 5))

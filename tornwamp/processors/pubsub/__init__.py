@@ -28,7 +28,7 @@ class SubscribeProcessor(Processor):
                 request_id=received_message.request_id,
                 subscription_id=subscription_id
             )
-            self.broadcast_message = customize.get_subscribe_broadcast_message(received_message, subscription_id, self.connection.id)
+            self.broadcast_messages = customize.get_subscribe_broadcast_messages(received_message, subscription_id, self.connection.id)
         else:
             answer = ErrorMessage(
                 request_id=received_message.request_id,
@@ -52,7 +52,7 @@ class PublishProcessor(Processor):
         answer = None
         if allow:
             publication_id = create_global_id()
-            self.broadcast_message, response = customize.get_publish_messages(received_message, publication_id, self.connection.id)
+            self.broadcast_messages, response = customize.get_publish_messages(received_message, publication_id, self.connection.id)
             if received_message.options.get("acknowledge"):
                 if response is None:
                     answer = PublishedMessage(

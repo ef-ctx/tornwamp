@@ -204,7 +204,7 @@ class WAMPHandlerTestCase(AsyncHTTPTestCase):
                 args=["It works"]
             )
             event_msg = messages.EventMessage(publication_id=1, kwargs={u'review': u'Mind blowing'})
-            return answer, messages.BroadcastMessage("interstellar", event_msg, connection.id)
+            return answer, [messages.BroadcastMessage("interstellar", event_msg, connection.id)]
 
         rpc.customize.procedures["test"] = test
 

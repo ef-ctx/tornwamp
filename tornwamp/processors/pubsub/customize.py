@@ -27,7 +27,7 @@ def authorize_subscription(topic_name, connection):
     return True, ""
 
 
-def get_subscribe_broadcast_message(received_message, subscription_id, connection_id):
+def get_subscribe_broadcast_messages(received_message, subscription_id, connection_id):
     """
     Return a BroadcastMessage to be delivered to websockets, possibly connected
     through redis pub/sub
@@ -37,6 +37,7 @@ def get_subscribe_broadcast_message(received_message, subscription_id, connectio
     assert received_message is not None, "get_subscribe_broadcast_message requires a received_message"
     assert subscription_id is not None, "get_subscribe_broadcast_message requires a subscription_id"
     assert connection_id is not None, "get_subscribe_broadcast_message requires a connection_id"
+    return []
 
 
 def get_publish_messages(received_message, publication_id, connection_id):
@@ -60,4 +61,4 @@ def get_publish_messages(received_message, publication_id, connection_id):
         event_message=event_message,
         publisher_connection_id=connection_id,
     )
-    return broadcast_msg, None
+    return [broadcast_msg], None
