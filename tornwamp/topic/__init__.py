@@ -25,6 +25,12 @@ class TopicsManager(dict):
     def __init__(self):
         self.redis = None
 
+    def create_topic(self, topic_name):
+        """
+        Creates a new topic with given name with configured redis address
+        """
+        self[topic_name] = Topic(topic_name, self.redis)
+
     def add_subscriber(self, topic_name, connection, subscription_id=None):
         """
         Add a connection as a topic's subscriber.

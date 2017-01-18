@@ -13,7 +13,7 @@ from tornwamp import session
 from tornwamp import handler
 from tornwamp import topic as tornwamp_topic
 from tornwamp.messages import Message, EventMessage, BroadcastMessage
-from tornwamp.topic import Topic, RedisUnavailableError
+from tornwamp.topic import Topic, RedisUnavailableError, TopicsManager
 
 
 class AsyncMixin(object):
@@ -253,11 +253,14 @@ class TopicManagerTestCase(AsyncTestCase, AsyncMixin):
     def setUp(self):
         super(TopicManagerTestCase, self).setUp()
 
+        self.old_topics = tornwamp_topic.topics
+        tornwamp_topic.topics = TopicsManager()
         tornwamp_topic.topics.redis = {"host": "127.0.0.1", "port": 6379}
 
     def tearDown(self):
         tornwamp_topic.topics.redis = None
 
+        tornwamp_topic.topics = self.old_topics
         super(TopicManagerTestCase, self).tearDown()
 
     def test_add_subscriber(self):
@@ -284,3 +287,8 @@ class TopicManagerTestCase(AsyncTestCase, AsyncMixin):
         self.assertEqual(topic.decode("utf-8"), u"test")
         received_msg = BroadcastMessage.from_text(received_msg.decode("utf-8"))
         self.assertEqual(received_msg.json, msg.json)
+
+    def test_create_topic(self):
+        self.run_greenlet(tornwamp_topic.topics.create_topic, "hello")
+        self.assertEqual(tornwamp_topic.topics["hello"].name, "hello")
+        self.assertEqual(tornwamp_topic.topics["hello"].redis_params, tornwamp_topic.topics.redis)
