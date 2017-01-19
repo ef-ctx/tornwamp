@@ -29,7 +29,7 @@ class TopicsManager(dict):
         """
         Creates a new topic with given name with configured redis address
         """
-        self[topic_name] = Topic(topic_name, self.redis)
+        self[topic_name] = self.get(topic_name, Topic(topic_name, self.redis))
 
     def add_subscriber(self, topic_name, connection, subscription_id=None):
         """
