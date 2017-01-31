@@ -5,10 +5,13 @@ Compatible with WAMP Document Revision: RC3, 2014/08/25, available at:
 https://github.com/tavendo/WAMP/blob/master/spec/basic.md
 """
 import json
+import uuid
 from copy import deepcopy
 
 from enum import IntEnum
 from tornwamp.identifier import create_global_id
+
+PUBLISHER_NODE_ID = uuid.uuid4()
 
 
 class Code(IntEnum):
@@ -40,6 +43,41 @@ class Code(IntEnum):
     # INVOCATION = 68
     # INTERRUPT = 69
     # YIELD = 70
+
+
+class BroadcastMessage(object):
+    """
+    This is a message that a procedure may want delivered.
+
+    This class is composed of an EventMessage and a topic name
+    """
+    def __init__(self, topic_name, event_message, publisher_connection_id):
+        assert isinstance(event_message, EventMessage), "only event messages are supported"
+        self.topic_name = topic_name
+        self.event_message = event_message
+        self.publisher_connection_id = publisher_connection_id
+        self.publisher_node_id = PUBLISHER_NODE_ID.hex
+
+    @property
+    def json(self):
+        return json.dumps({
+            "publisher_node_id": self.publisher_node_id,
+            "publisher_connection_id": self.publisher_connection_id,
+            "topic_name": self.topic_name,
+            "event_message": self.event_message.json,
+        })
+
+    @classmethod
+    def from_text(cls, text):
+        raw = json.loads(text)
+        event_msg = EventMessage.from_text(raw["event_message"])
+        msg = cls(
+            topic_name=raw["topic_name"],
+            event_message=event_msg,
+            publisher_connection_id=raw["publisher_connection_id"]
+        )
+        msg.publisher_node_id = raw["publisher_node_id"]
+        return msg
 
 
 class Message(object):
@@ -350,18 +388,30 @@ class EventMessage(Message):
     [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict]
     [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list]
     [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list, PUBLISH.ArgumentsKw|dict]
+
+    When transmitting an EventMessage between redis pubsubs the
+    subscription_id will be omitted (it can only be resolved in the
+    subscriber.)
     """
     def __init__(self, code=Code.EVENT, subscription_id=None, publication_id=None, details=None, args=None, kwargs=None):
-        assert subscription_id is not None, "EventMessage must have subscription_id"
         assert publication_id is not None, "EventMessage must have publication_id"
         self.code = code
-        self.subscription_id = subscription_id
+        self._subscription_id = subscription_id
         self.publication_id = publication_id
         self.details = details or {}
         self.args = args or []
         self.kwargs = kwargs or {}
         self.value = [self.code, self.subscription_id, self.publication_id, self.details]
         self._update_args_and_kargs()
+
+    @property
+    def subscription_id(self):
+        return self._subscription_id
+
+    @subscription_id.setter
+    def subscription_id(self, id_):
+        self._subscription_id = id_
+        self.value[1] = id_
 
 
 class UnsubscribeMessage(Message):
