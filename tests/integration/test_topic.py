@@ -170,6 +170,10 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
         msg.publisher_node_id = uuid.uuid4().hex
         self.wait_for(self.topic._publisher_connection.call("PUBLISH", self.topic.name, msg.json))
 
+        # force ioloop to run
+        self.io_loop.call_later(0.2, self.stop)
+        self.wait()
+
         event_msg.subscription_id = "7"
         handler_mock.write_message.assert_called_once_with(event_msg.json)
 

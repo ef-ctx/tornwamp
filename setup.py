@@ -27,5 +27,5 @@ setup(name="tornwamp",
       packages=find_packages(),
       tests_require=["coverage==4.0.3", "nose==1.3.7", "pep8==1.7.0", "mock==1.0.1", "pylint==1.5.4"],
       url = "http://github.com/ef-ctx/tornwamp",
-      version="2.0.1"
+      version="2.0.2"
 )
