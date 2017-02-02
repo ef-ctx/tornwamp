@@ -162,16 +162,13 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
         connection = session.ClientConnection(handler_mock)
         self.run_greenlet(self.topic.add_subscriber, "7", connection)
 
-        time.sleep(1.5)
+        self.io_loop.call_later(1.5, self.stop)
+        self.wait()
 
         event_msg = EventMessage(subscription_id="1", publication_id="1", kwargs={"type": "test"})
         msg = BroadcastMessage("test", event_msg, 1)
         msg.publisher_node_id = uuid.uuid4().hex
-        self.run_greenlet(self.topic._publisher_connection.call, "PUBLISH", self.topic.name, msg.json)
-
-        # wait for all futures to execute
-        self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.clear_instance()
+        self.wait_for(self.topic._publisher_connection.call("PUBLISH", self.topic.name, msg.json))
 
         event_msg.subscription_id = "7"
         handler_mock.write_message.assert_called_once_with(event_msg.json)
@@ -184,11 +181,8 @@ class TopicTestCase(AsyncTestCase, AsyncMixin):
 
         self.topic._subscriber_connection = None
 
-        time.sleep(1.5)
-
-        # wait for all futures to execute
-        self.wait_for(self.topic._publisher_connection.call("GET", "a"))
-        self.io_loop.clear_instance()
+        self.io_loop.call_later(1.5, self.stop)
+        self.wait()
 
         self.assertTrue(handler_mock.close.called)
         self.assertEqual(len(self.topic.subscribers), 0)
