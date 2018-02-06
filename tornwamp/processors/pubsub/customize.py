@@ -1,8 +1,14 @@
 """
 This module should be overwride subscription procedures:
-- authorize: if we will allow a connection to subscribe to a topic or not
-- register: what we expect to happen (e.g. connection becomes a subscriber or
-publisher of that topic)
+- authorize_subscription: if we will allow a connection to subscribe to
+  a topic or not
+- authorize_publication: if we will allow a connection to publish to
+  a topic or not
+- get_subscribe_broadcast_messages: if we want to send broadcast
+  messages when a client subscribes to a topic
+- get_publish_message: if we want to customize the broadcast message
+  when a client publishes to a topic. The response to the client can
+  also be customized with that function.
 """
 from tornwamp import messages
 
@@ -29,8 +35,8 @@ def authorize_subscription(topic_name, connection):
 
 def get_subscribe_broadcast_messages(received_message, subscription_id, connection_id):
     """
-    Return a BroadcastMessage to be delivered to websockets, possibly connected
-    through redis pub/sub
+    Return a BroadcastMessage to be delivered to other connections,
+    possibly connected through redis pub/sub
 
     This message is called whenever an user subscribes to a topic.
     """
@@ -42,12 +48,13 @@ def get_subscribe_broadcast_messages(received_message, subscription_id, connecti
 
 def get_publish_messages(received_message, publication_id, connection_id):
     """
-    Return a tuple with two messages: (BroadcastMessage, PublishedMessage|ErrorMessage)
+    Return a tuple with two messages:
+    (BroadcastMessage, PublishedMessage|ErrorMessage)
     - BroadcastMessage: message to be delivered to the subscribers
     - PublishedMessage|ErrorMessage: message to be returned to the publisher.
 
-    If the second element of the tuple is None, then a default PublishedMessage
-    will be returned to the publisher.
+    If the second element of the tuple is None, then a default
+    PublishedMessage will be returned to the publisher.
 
     This message is called whenever a message is published.
     """

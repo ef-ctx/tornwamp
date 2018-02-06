@@ -41,11 +41,11 @@ class SubscribeProcessor(Processor):
 
 class PublishProcessor(Processor):
     """
-    Responsible for dealing SUBSCRIBE messages.
+    Responsible for dealing PUBLISH messages.
     """
     def process(self):
         """
-        Return SUBSCRIBE message based on the input HELLO message.
+        Return PUBLISHED message based on the PUBLISH message received.
         """
         received_message = PublishMessage(*self.message.value)
         allow, msg = customize.authorize_publication(received_message.topic, self.connection)
