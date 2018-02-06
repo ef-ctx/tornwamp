@@ -55,9 +55,9 @@ An example of how to build a server using TornWAMP (`wamp.py`):
 ::
 
     import tornado
-    import tornwamp
+    from tornwamp import handler
 
-    class SampleHandler(tornwamp.WAMPHandler):
+    class SampleHandler(handler.WAMPHandler):
         pass
 
     application = tornado.web.Application([
