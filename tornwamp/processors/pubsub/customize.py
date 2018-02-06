@@ -1,11 +1,16 @@
 """
 This module should be overwride subscription procedures:
-- authorize: if we will allow a connection to subscribe to a topic or not
-- register: what we expect to happen (e.g. connection becomes a subscriber or
-publisher of that topic)
+- authorize_subscription: if we will allow a connection to subscribe to
+  a topic or not
+- authorize_publication: if we will allow a connection to publish to
+  a topic or not
+- get_subscribe_broadcast_messages: if we want to send broadcast
+  messages when a client subscribes to a topic
+- get_publish_message: if we want to customize the broadcast message
+  when a client publishes to a topic. The response to the client can
+  also be customized with that function.
 """
-from tornwamp import topic as tornwamp_topic
-from tornwamp.messages import EventMessage
+from tornwamp import messages
 
 
 def authorize_publication(topic_name, connection):
@@ -28,60 +33,39 @@ def authorize_subscription(topic_name, connection):
     return True, ""
 
 
-def add_subscriber(topic, connection):
+def get_subscribe_broadcast_messages(received_message, subscription_id, connection_id):
     """
-    By default, the connection is added as a subscriber of that topic.
-    Return subscription ID.
-    """
-    subscription_id = tornwamp_topic.topics.add_subscriber(topic, connection)
-    return subscription_id
+    Return a BroadcastMessage to be delivered to other connections,
+    possibly connected through redis pub/sub
 
-
-def get_subscribe_direct_messages(subscribe_message, subscription_id):
+    This message is called whenever an user subscribes to a topic.
     """
-    Return a list of dictionaries containing websocket and what message they
-    should receive. This is called from SubscribeProcessor when it succeeds.
-
-    Sample response:
-    [
-        {
-            "websocket": <tornwamp.WAMPHandler>,
-            "message": <tornwamp.messages.Event>
-        }
-    ]
-    """
-    assert subscribe_message, "get_subscribe_direct_messages requires subscribe_message"
-    assert subscription_id, "get_subscribe_direct_messages requires subscription_id"
+    assert received_message is not None, "get_subscribe_broadcast_message requires a received_message"
+    assert subscription_id is not None, "get_subscribe_broadcast_message requires a subscription_id"
+    assert connection_id is not None, "get_subscribe_broadcast_message requires a connection_id"
     return []
 
 
-def get_publish_direct_messages(publish_message, publication_id, publisher_connection):
+def get_publish_messages(received_message, publication_id, connection_id):
     """
-    Return a list of dictionaries containing websocket and what message they
-    should receive. This is called from PublishProcessor when it succeeds.
+    Return a tuple with two messages:
+    (BroadcastMessage, PublishedMessage|ErrorMessage)
+    - BroadcastMessage: message to be delivered to the subscribers
+    - PublishedMessage|ErrorMessage: message to be returned to the publisher.
 
-    Sample response:
-    [
-        {
-            "websocket": <tornwamp.WAMPHandler>,
-            "message": <tornwamp.messages.Event>
-        }
+    If the second element of the tuple is None, then a default
+    PublishedMessage will be returned to the publisher.
+
+    This message is called whenever a message is published.
     """
-    data = []
-    topic_name = publish_message.topic
-    topic = tornwamp_topic.topics.get(topic_name)
-    if topic:
-        for subscription_id, connection in topic.subscribers.items():
-            if connection != publisher_connection:
-                event_message = EventMessage(
-                    subscription_id=subscription_id,
-                    publication_id=publication_id,
-                    args=publish_message.args,
-                    kwargs=publish_message.kwargs,
-                )
-                item = {
-                    "websocket": connection._websocket,
-                    "message": event_message
-                }
-                data.append(item)
-    return data
+    event_message = messages.EventMessage(
+        publication_id=publication_id,
+        args=received_message.args,
+        kwargs=received_message.kwargs,
+    )
+    broadcast_msg = messages.BroadcastMessage(
+        topic_name=received_message.topic,
+        event_message=event_message,
+        publisher_connection_id=connection_id,
+    )
+    return [broadcast_msg], None

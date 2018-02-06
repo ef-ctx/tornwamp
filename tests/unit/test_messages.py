@@ -105,6 +105,35 @@ class MessageTestCase(unittest.TestCase):
         expected = [8, 4, 8259, {}, "light.bug", ["banana"]]
         self.assertEqual(error_message.value, expected)
 
+    def test_build_error_message(self):
+        call_message = wamp.CallMessage(
+            request_id=8259,
+            procedure="ping",
+        )
+        uri = "bad.bed.bug"
+        description = "don't let the bed bug bite you"
+        computed = wamp.build_error_message(
+            in_message=call_message.json,
+            uri=uri,
+            description=description,
+        )
+        expected_message = wamp.ErrorMessage(
+            request_code=Code.CALL,
+            request_id=8259,
+            uri=uri,
+        )
+        expected_message.error(description)
+        self.assertEqual(computed, expected_message.json)
+
+    def test_build_error_message_not_error_prone(self):
+        hello_message = wamp.HelloMessage()
+        result = wamp.build_error_message(
+            in_message=hello_message.json,
+            uri="bad.bed.bug",
+            description="don't let the bed bug bite you",
+        )
+        self.assertIsNone(result)
+
     def test_subscribe_message(self):
         subscribe_message = wamp.SubscribeMessage(request_id=1395, topic="lesson.1")
         self.assertEqual(subscribe_message.code, Code.SUBSCRIBE)
@@ -145,3 +174,27 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(event_message.publication_id, 27)
         expected = [36, 74, 27, {}]
         self.assertEqual(event_message.value, expected)
+
+    def test_result_message(self):
+        result_message = wamp.ResultMessage(request_id=8259)
+        self.assertEqual(result_message.code, Code.RESULT)
+        self.assertEqual(result_message.details, {})
+        self.assertEqual(result_message.args, [])
+        self.assertEqual(result_message.kwargs, {})
+        expected = [50, 8259, {}]
+        self.assertEqual(result_message.value, expected)
+
+    def test_unsubscribe_message(self):
+        unsubscribe_message = wamp.UnsubscribeMessage(request_id=1409, subscription_id=2)
+        self.assertEqual(unsubscribe_message.code, Code.UNSUBSCRIBE)
+        self.assertEqual(unsubscribe_message.request_id, 1409)
+        self.assertEqual(unsubscribe_message.subscription_id, 2)
+        expected = [34, 1409, 2]
+        self.assertEqual(unsubscribe_message.value, expected)
+
+    def test_unsubscribed_message(self):
+        unsubscribed_message = wamp.UnsubscribedMessage(request_id=723)
+        self.assertEqual(unsubscribed_message.code, Code.UNSUBSCRIBED)
+        self.assertEqual(unsubscribed_message.request_id, 723)
+        expected = [35, 723]
+        self.assertEqual(unsubscribed_message.value, expected)

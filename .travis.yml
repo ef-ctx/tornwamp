@@ -10,3 +10,5 @@ script:
   nosetests -s  --cover-branches --cover-erase --with-coverage --cover-inclusive --cover-package=tornwamp --tests=tests --with-xunit
 after_success:
   coveralls
+services:
+  - redis-server
