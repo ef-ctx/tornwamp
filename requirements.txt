@@ -1,5 +1,6 @@
 greenlet==0.4.9
 tornado==4.3
 enum34
+six==1.10.0
 tornadis==0.8.0
 greenlet_tornado==1.1.3
