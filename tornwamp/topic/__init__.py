@@ -1,5 +1,19 @@
 """
 Used to handle PubSub topics publishers and subscribers
+
+The two classes defined by this module shouldn't usually be instantiated by
+users of this library. Instead, the singleton object topics should be used. In
+order to configure redis, the attribute topics.redis should be setted to a dict
+with host an port. Eg.:
+
+    {"host": "example.com", "port": 6379}
+
+Each topic created via WAMP's pubsub, unless the behavior is overwritten, will
+create a new topic in topics. By publishing messages in a topic, all other
+running tornwamp instances will receive the broadcast message and will process
+it with tornwamp.topic.customize.deliver_event_messages, which, by default,
+delivers the broadcasted message to all WAMP connections subscribed to the
+topic.
 """
 from tornado import gen, ioloop
 import tornadis
