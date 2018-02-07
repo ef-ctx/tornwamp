@@ -76,7 +76,8 @@ class TopicsManager(dict):
 
     def remove_connection(self, connection):
         """
-        Connection is to be removed, scrap all connection publishers/subscribers in every topic
+        Connection is to be removed, scrap all connection
+        publishers/subscribers in every topic
         """
         for topic_name, subscription_id in connection.topics.get("publisher", {}).items():
             topic = self.get(topic_name)
@@ -88,9 +89,9 @@ class TopicsManager(dict):
 
     def get_connection(self, topic_name, subscription_id):
         """
-        Get topic connection provided topic_name and subscription_id. Try to find
-        it in subscribers, otherwise, fetches from publishers.
-        Return None if it is not available in any.
+        Get topic connection provided topic_name and subscription_id.
+        Try to find it in subscribers, otherwise, fetches from
+        publishers.  Return None if it is not available in any.
         """
         topic = self[topic_name]
         return topic.subscribers.get(subscription_id) or topic.publishers.get(subscription_id)
@@ -129,7 +130,8 @@ class Topic(object):
     @property
     def connections(self):
         """
-        Return a set of topic connections - no matter if they are subscribers or publishers.
+        Return a set of topic connections - no matter if they are
+        subscribers or publishers.
         """
         # About merging two dictionaries without changing the original one:
 
@@ -263,8 +265,8 @@ class Topic(object):
 
     def _disconnect_publisher(self):
         """
-        Disconnect periodically in order not to have several unused connections
-        of old topics.
+        Disconnect periodically in order not to have several unused
+        connections of old topics.
         """
         if self._publisher_connection is not None:
             self._publisher_connection.disconnect()
