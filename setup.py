@@ -21,11 +21,11 @@ setup(name="tornwamp",
       download_url = 'http://pypi.python.org/pypi/tornwamp',
       description=u"WAMP (Web Application Messaging Protocol) utilities",
       include_package_data=True,
-      install_requires=["greenlet==0.4.9", "greenlet_tornado==1.1.2", "tornado>=4.0", "enum34", "tornadis==0.8.0", "six==1.10.0"],
+      install_requires=["greenlet==0.4.9", "greenlet_tornado==1.1.2", "tornado>=4.0", "enum34", "tornadis==0.8.0", "six==1.10.0", "deprecated==1.2.5"],
       license="Apache License",
       long_description=README,
       packages=find_packages(),
       tests_require=["coverage==4.0.3", "nose==1.3.7", "pep8==1.7.0", "mock==1.0.1", "pylint==1.5.4"],
       url = "http://github.com/ef-ctx/tornwamp",
-      version="2.0.2"
+      version="2.1.0"
 )

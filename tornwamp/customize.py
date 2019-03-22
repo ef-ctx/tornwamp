@@ -39,5 +39,4 @@ processors = {
 
 def broadcast_messages(processor):
     for msg in processor.broadcast_messages:
-        topic = tornwamp_topic.topics.get(msg.topic_name)
-        topic.publish(msg)
+        tornwamp_topic.topics.publish(msg)

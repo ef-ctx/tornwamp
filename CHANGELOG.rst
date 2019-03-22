@@ -1,3 +1,10 @@
+Version 2.1.0 (2019-03-21)
+--------------------------
+
+* `TopicManager.create_topic(name)` had been deprecated; please use `create_topic_if_not_exists(name)` instead.
+* the new `publish(message)` method was added to `TopicManager`: it finds/creates a topic associated with the message
+  via its `topic_name` property and then publishes it there.
+
 Version 2.0.0 (2017-01-06)
 --------------------------
 

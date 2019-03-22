@@ -4,3 +4,4 @@ enum34
 six==1.10.0
 tornadis==0.8.0
 greenlet_tornado==1.1.3
+deprecated==1.2.5

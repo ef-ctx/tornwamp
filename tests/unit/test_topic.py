@@ -214,7 +214,7 @@ class CustomizeTestCase(unittest.TestCase):
         connection = ClientConnection(None, user_id=7475)
         with patch.object(self.subscriber_connection, "_websocket") as ws:
             msg = BroadcastMessage("education.first", EventMessage(subscription_id=1, publication_id=1), connection.id)
-            tornwamp_topic.topics.get("education.first").publish(msg)
+            tornwamp_topic.topics.publish(msg)
             ws.write_message.assert_called_once_with(EventMessage(subscription_id=18273, publication_id=1).json)
 
     def test_deliver_event_messages_empty_topic(self):

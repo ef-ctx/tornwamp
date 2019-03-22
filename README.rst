@@ -32,7 +32,7 @@ it can also be used in other ways.
 How to install
 ==============
 
-Using `pip <https://pip.pypa.io/>`_ (to be available soon):
+Using `pip <https://pip.pypa.io/>`_:
 
 ::
 

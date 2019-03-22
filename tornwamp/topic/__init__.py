@@ -8,6 +8,7 @@ from tornwamp import messages, utils
 from tornwamp.topic import customize
 from tornwamp.identifier import create_global_id
 
+from deprecated import deprecated
 
 PUBSUB_TIMEOUT = 60
 PUBLISHER_CONNECTION_TIMEOUT = 3 * 3600 * 1000  # 3 hours in miliseconds
@@ -22,21 +23,39 @@ class TopicsManager(dict):
     Manages all existing topics to which connections can potentially
     publish and/or subscribe to.
     """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
         self.redis = None
 
+    @deprecated(version='2.1.0', reason="please use create_topic_if_not_exists(topic_name)")
     def create_topic(self, topic_name):
         """
         Creates a new topic with given name with configured redis address
         """
-        self[topic_name] = self.get(topic_name, Topic(topic_name, self.redis))
+        self.create_topic_if_not_exists(topic_name)
+
+    def create_topic_if_not_exists(self, topic_name):
+        """
+        Creates a new topic with a given name and configured redis address if it doesn't already exist.
+        Returns the topic (either newly created or previously registered for the given name).
+        """
+        topic = self.get(topic_name, Topic(topic_name, self.redis))
+        self[topic_name] = topic
+        return topic
+
+    def publish(self, msg):
+        """
+        Publish finds/creates a topic associated with `msg` via its `topic_name` property
+        and then publishes the message to it.
+        """
+        topic = self.create_topic_if_not_exists(msg.topic_name)
+        return topic.publish(msg)
 
     def add_subscriber(self, topic_name, connection, subscription_id=None):
         """
         Add a connection as a topic's subscriber.
         """
-        new_topic = Topic(topic_name, self.redis)
-        topic = self.get(topic_name, new_topic)
+        topic = self.create_topic_if_not_exists(topic_name)
         subscription_id = subscription_id or create_global_id()
         topic.add_subscriber(subscription_id, connection)
         self[topic_name] = topic
@@ -58,10 +77,9 @@ class TopicsManager(dict):
         """
         Add a connection as a topic's publisher.
         """
-        topic = self.get(topic_name, Topic(topic_name, self.redis))
+        topic = self.create_topic_if_not_exists(topic_name)
         subscription_id = subscription_id or create_global_id()
         topic.publishers[subscription_id] = connection
-        self[topic_name] = topic
         connection.add_publishing_channel(subscription_id, topic_name)
         return subscription_id
 

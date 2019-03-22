@@ -287,15 +287,15 @@ class TopicManagerTestCase(AsyncTestCase, AsyncMixin):
         self.assertEqual(received_msg.json, msg.json)
 
     def test_create_topic(self):
-        self.run_greenlet(tornwamp_topic.topics.create_topic, "hello")
+        self.run_greenlet(tornwamp_topic.topics.create_topic_if_not_exists, "hello")
         self.assertEqual(tornwamp_topic.topics["hello"].name, "hello")
         self.assertEqual(tornwamp_topic.topics["hello"].redis_params, tornwamp_topic.topics.redis)
 
     def test_create_existing_topic(self):
-        self.run_greenlet(tornwamp_topic.topics.create_topic, "hello")
+        self.run_greenlet(tornwamp_topic.topics.create_topic_if_not_exists, "hello")
         hello = tornwamp_topic.topics["hello"]
 
-        self.run_greenlet(tornwamp_topic.topics.create_topic, "hello")
+        self.run_greenlet(tornwamp_topic.topics.create_topic_if_not_exists, "hello")
         second_hello = tornwamp_topic.topics["hello"]
 
         self.assertIs(hello, second_hello)
