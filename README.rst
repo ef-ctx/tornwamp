@@ -86,6 +86,13 @@ to connect to the server using:
   });
 
 
+Read more
+=========
+
+For more information on how the library works internally refer to `docs
+<docs/>` directory inside this package.
+
+
 License
 =======
 
