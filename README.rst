@@ -93,6 +93,12 @@ For more information on how the library works internally refer to `docs
 <docs/>` directory inside this package.
 
 
+Other projects
+==============
+
+`WAMPnado <https://github.com/rexlunae/wampnado/>`_ is a sister project which had been started as a fork, but now it contains more features and provides a better conformance to the WAMP standard.
+
+
 License
 =======
 
